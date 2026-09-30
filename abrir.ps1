@@ -1,7 +1,7 @@
 ﻿<#
   Abre o Catalogo FTC_CAD como aplicativo. Antes de abrir, confere se ha versao nova
   (catalogo, lista de pecas e instalador) no repositorio e atualiza sozinho.
-  Se a atualizacao trouxer pecas novas, abre uma janela do instalador para baixa-las.
+  Se a atualizacao trouxer pecas novas, abre a janela do instalador para baixa-las.
   Sem internet, ele apenas abre a versao que ja esta na pasta.
 #>
 $ErrorActionPreference = 'SilentlyContinue'
@@ -48,7 +48,7 @@ try {
 }
 
 if ($novas -gt 0) {
-    $argsInst = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', ('"' + (Join-Path $root 'instalar.ps1') + '"'), '-SemAtalho')
+    $argsInst = @('-NoProfile', '-WindowStyle', 'Hidden', '-ExecutionPolicy', 'Bypass', '-File', ('"' + (Join-Path $root 'instalar.ps1') + '"'), '-SemAtalho')
     Start-Process powershell -ArgumentList $argsInst
 }
 

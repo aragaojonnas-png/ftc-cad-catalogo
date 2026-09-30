@@ -1,11 +1,4 @@
 @echo off
 chcp 65001 >nul
-title Instalador FTC_CAD
-echo.
-echo  Instalador da biblioteca FTC_CAD
-echo  Os arquivos serao baixados para esta pasta: %~dp0
-echo  (Arquivos acima de 20 MB sao pulados. Para baixar tudo, rode o Instalar-tudo.bat)
-echo.
-powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0instalar.ps1"
-echo.
-pause
+rem Abre a janela do instalador (arquivos acima de 20 MB sao pulados; para baixar tudo use Instalar-tudo.bat)
+start "" powershell -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File "%~dp0instalar.ps1"
