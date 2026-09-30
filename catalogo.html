@@ -109,9 +109,24 @@ function draw(){
   $('more').hidden = shown >= list.length;
   const on = document.querySelector('.tab.on'); if (on) on.scrollIntoView({inline:'nearest', block:'nearest'});
 }
+function baseDir(){
+  try { const u = decodeURIComponent(location.href.split('?')[0].split('#')[0]);
+    if (u.startsWith('file:///')) return u.slice(8, u.lastIndexOf('/') + 1).replace(/\//g, '\\'); } catch (e) {}
+  return '';
+}
+function copyText(t){
+  if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(t);
+  return new Promise((ok, no) => { try { const a = document.createElement('textarea'); a.value = t; a.style.position = 'fixed'; a.style.opacity = '0';
+    document.body.appendChild(a); a.select(); const r = document.execCommand('copy'); a.remove(); r ? ok() : no(); } catch (e) { no(); } });
+}
+function copyCard(c){
+  if (!c) return;
+  const r = list[+c.dataset.i], path = baseDir() + r.p.replace(/\//g, '\\') + '\\' + r.n + '.step';
+  copyText(path).then(() => toast('Caminho copiado: ' + path), () => { window.prompt('Copie o caminho (Ctrl+C):', path); });
+}
 $('grid').addEventListener('click', ev => copyCard(ev.target.closest('.card')));
 $('grid').addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); copyCard(ev.target.closest('.card')); } });
-function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');setTimeout(()=>e.classList.remove('on'),1800)}
+function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');setTimeout(()=>e.classList.remove('on'),3500)}
 $('more').onclick = () => { shown += PAGE; draw(); };
 ['q','mfr','cat','frc','sz'].forEach(id => $(id).addEventListener(id === 'q' ? 'input' : 'change', filter));
 filter();
