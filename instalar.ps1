@@ -276,6 +276,9 @@ if ($failures.Count -gt 0) {
     Write-Host "Falhas listadas em: $logPath" -ForegroundColor Yellow
 }
 
+# ---- botao "+ Adicionar peca" do catalogo (endereco ftccad://, so para este usuario) ----
+try { $eq = Join-Path $root 'equipe.ps1'; if (Test-Path -LiteralPath $eq) { . $eq; Register-FtcProtocol $root; [void](Update-Extras $root) } } catch {}
+
 # ---- atalhos: area de trabalho e menu Iniciar ----
 $atalhoMsg = ''
 if (-not $SemAtalho -and -not $cancelou) {

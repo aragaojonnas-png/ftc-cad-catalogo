@@ -32,7 +32,8 @@ try {
     $local = ''
     if (Test-Path -LiteralPath $verFile) { $local = (Get-Content -LiteralPath $verFile -Raw).Trim() }
     if ($remoto -and $remoto -ne $local) {
-        foreach ($f in 'catalogo.html', 'manifesto.json', 'instalar.ps1') { Get-File ($base + $f) (Join-Path $root $f) }
+        foreach ($f in 'catalogo.html', 'manifesto.json', 'instalar.ps1', 'equipe.ps1', 'adicionar.ps1') { Get-File ($base + $f) (Join-Path $root $f) }
+        Get-File ($base + 'abrir.ps1') ($PSCommandPath + '.novo')   # troca no fim desta execucao
         [IO.File]::WriteAllText($verFile, $remoto)
         Add-Content -LiteralPath $log -Value ("{0}  atualizado para {1}" -f (Get-Date -Format 'yyyy-MM-dd HH:mm'), $remoto)
         # pecas novas (respeita o limite de 20 MB e ignora FRC, como o instalador)
@@ -52,6 +53,14 @@ if ($novas -gt 0) {
     Start-Process powershell -ArgumentList $argsInst
 }
 
+# ---- pecas da equipe (pasta compartilhada): registra o botao do catalogo e atualiza a lista ----
+try {
+    $eq = Join-Path $root 'equipe.ps1'
+    if (Test-Path -LiteralPath $eq) { . $eq; Register-FtcProtocol $root; [void](Update-Extras $root) }
+} catch {
+    Add-Content -LiteralPath $log -Value ("{0}  equipe: {1}" -f (Get-Date -Format 'yyyy-MM-dd HH:mm'), $_.Exception.Message)
+}
+
 # ---- abre o catalogo como aplicativo ----
 $cat = Join-Path $root 'catalogo.html'
 $uri = ([Uri]$cat).AbsoluteUri
@@ -65,3 +74,6 @@ $cands = @(
 $browser = $cands | Where-Object { $_ -and (Test-Path -LiteralPath $_) } | Select-Object -First 1
 if ($browser) { Start-Process -FilePath $browser -ArgumentList ('--app="' + $uri + '"') }
 else { Start-Process -FilePath $cat }
+
+# troca este script pela versao nova baixada (vale na proxima abertura)
+try { if ($PSCommandPath -and (Test-Path -LiteralPath ($PSCommandPath + '.novo'))) { Move-Item -LiteralPath ($PSCommandPath + '.novo') -Destination $PSCommandPath -Force } } catch {}
