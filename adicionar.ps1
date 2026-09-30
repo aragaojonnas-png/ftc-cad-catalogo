@@ -31,7 +31,7 @@ if (-not $pasta) {
 $bg = [Drawing.Color]::FromArgb(19, 14, 34); $fg = [Drawing.Color]::FromArgb(236, 230, 250)
 $campo = [Drawing.Color]::FromArgb(30, 22, 55)
 $f = New-Object Windows.Forms.Form
-$f.Text = 'Adicionar peca - FTC_CAD'; $f.ClientSize = New-Object Drawing.Size(560, 430)
+$f.Text = 'Adicionar peca - FTC_CAD'; $f.ClientSize = New-Object Drawing.Size(560, 492)
 $f.StartPosition = 'CenterScreen'; $f.FormBorderStyle = 'FixedDialog'; $f.MaximizeBox = $false
 $f.BackColor = $bg; $f.ForeColor = $fg; $f.Font = New-Object Drawing.Font('Segoe UI', 10)
 
@@ -57,17 +57,23 @@ $l2 = New-Object Windows.Forms.Label; $l2.Text = 'Tipo de peca'; $l2.SetBounds(2
 $cmbTipo = New-Object Windows.Forms.ComboBox; $cmbTipo.SetBounds(290, 216, 250, 26); $cmbTipo.DropDownStyle = 'DropDownList'
 $cmbTipo.BackColor = $campo; $cmbTipo.ForeColor = $fg; [void]$cmbTipo.Items.AddRange($script:TiposFtc); $cmbTipo.SelectedItem = 'Outros'; $f.Controls.Add($cmbTipo)
 
-Add-Rotulo 'Link da pagina do produto (opcional)' 254
-$txtLink = Add-Caixa 276 520
+Add-Rotulo 'Grupo personalizado (opcional): aparece junto dos fabricantes e como etiqueta na peca' 254
+$cmbGrupo = New-Object Windows.Forms.ComboBox; $cmbGrupo.SetBounds(20, 276, 520, 26); $cmbGrupo.DropDownStyle = 'DropDown'
+$cmbGrupo.BackColor = $campo; $cmbGrupo.ForeColor = $fg
+try { foreach ($g in (Get-Grupos $pasta)) { [void]$cmbGrupo.Items.Add($g) } } catch {}
+$f.Controls.Add($cmbGrupo)
 
-Add-Rotulo 'Foto da peca (opcional, .jpg ou .png)' 314
-$txtFoto = Add-Caixa 336 400; $txtFoto.ReadOnly = $true
-$btnFoto = New-Botao 'Procurar...' 430 335 110
+Add-Rotulo 'Link da pagina do produto (opcional)' 314
+$txtLink = Add-Caixa 336 520
+
+Add-Rotulo 'Foto da peca (opcional, .jpg ou .png)' 374
+$txtFoto = Add-Caixa 396 400; $txtFoto.ReadOnly = $true
+$btnFoto = New-Botao 'Procurar...' 430 395 110
 
 $lblPasta = New-Object Windows.Forms.Label; $lblPasta.ForeColor = [Drawing.Color]::FromArgb(170, 160, 200)
-$lblPasta.Text = 'Pasta da equipe: ' + $pasta; $lblPasta.SetBounds(20, 374, 520, 20); $f.Controls.Add($lblPasta)
-$btnOk = New-Botao 'Adicionar' 300 392 120
-$btnCancel = New-Botao 'Cancelar' 430 392 110
+$lblPasta.Text = 'Pasta da equipe: ' + $pasta; $lblPasta.SetBounds(20, 434, 520, 20); $f.Controls.Add($lblPasta)
+$btnOk = New-Botao 'Adicionar' 300 456 120
+$btnCancel = New-Botao 'Cancelar' 430 456 110
 $btnCancel.BackColor = [Drawing.Color]::FromArgb(60, 48, 92)
 $btnCancel.Add_Click({ $f.Close() })
 
@@ -120,7 +126,7 @@ $btnOk.Add_Click({
         $nome = if ($script:arquivos.Count -eq 1) { $txtNome.Text.Trim() } else { [IO.Path]::GetFileNameWithoutExtension($nomeArq) }
         $meta = [ordered]@{
             nome = $nome; codigo = $(if ($script:arquivos.Count -eq 1) { $txtCod.Text.Trim() } else { '' })
-            fab = $cmbFab.Text.Trim(); tipo = $tipo; link = $txtLink.Text.Trim(); foto = $foto
+            fab = $cmbFab.Text.Trim(); grupo = $cmbGrupo.Text.Trim(); tipo = $tipo; link = $txtLink.Text.Trim(); foto = $foto
             por = $env:USERNAME; data = (Get-Date -Format 'yyyy-MM-dd')
         }
         [IO.File]::WriteAllText(($dest + '.json'), ($meta | ConvertTo-Json), (New-Object Text.UTF8Encoding($true)))

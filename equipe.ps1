@@ -59,6 +59,7 @@ function Update-Extras($root) {
                     if (-not (Test-Path -LiteralPath $step)) { continue }
                     $tipo = [string]$m.tipo; if (-not $tipo) { $tipo = 'Outros' }
                     $fab = [string]$m.fab; if (-not $fab) { $fab = 'Outro' }
+                    $grupo = ([string]$m.grupo).Trim()
                     $nome = [string]$m.nome; if (-not $nome) { $nome = [IO.Path]::GetFileNameWithoutExtension($step) }
                     if ($m.codigo) { $nome = ([string]$m.codigo) + ' - ' + $nome }
                     $foto = ''
@@ -79,10 +80,12 @@ function Update-Extras($root) {
                         p = 'Equipe/' + $tipo
                         s = [math]::Round((Get-Item -LiteralPath $step).Length / 1MB, 1)
                         i = $foto
-                        t = ($nome + ' ' + $fab + ' equipe ' + [string]$m.por)
+                        t = ($nome + ' ' + $fab + ' ' + $grupo + ' equipe ' + [string]$m.por)
                         u = [string]$m.link
                         f = 0
-                        m = $fab
+                        m = $(if ($grupo) { $grupo } else { $fab })
+                        gr = $grupo
+                        v = $fab
                         g = $tipo
                         x = 1
                         b = [string]$m.por
@@ -95,4 +98,17 @@ function Update-Extras($root) {
     $json = if ($lista.Count -gt 0) { ConvertTo-Json -InputObject @($lista.ToArray()) -Compress -Depth 4 } else { '[]' }
     [IO.File]::WriteAllText($saida, ('window.EXTRAS = ' + $json + ';'), (New-Object Text.UTF8Encoding($false)))
     return $lista.Count
+}
+
+# grupos personalizados ja usados (para sugerir na janela de adicionar)
+function Get-Grupos($pasta) {
+    $g = New-Object System.Collections.ArrayList
+    $base = Join-Path $pasta 'Pecas'
+    if (Test-Path -LiteralPath $base) {
+        foreach ($j in Get-ChildItem -LiteralPath $base -Recurse -Filter '*.json' -ErrorAction SilentlyContinue) {
+            try { $m = Get-Content -LiteralPath $j.FullName -Raw -Encoding UTF8 | ConvertFrom-Json
+                  $x = ([string]$m.grupo).Trim(); if ($x -and -not $g.Contains($x)) { [void]$g.Add($x) } } catch {}
+        }
+    }
+    return @($g | Sort-Object)
 }

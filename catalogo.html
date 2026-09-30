@@ -115,7 +115,7 @@ function draw(){
       <div class="ph ${r.i ? '' : 'none'}">${r.i ? `<img loading="lazy" referrerpolicy="no-referrer" src="${esc(r.i)}" alt="">` : 'sem foto'}</div>
       <div class="b">${code ? `<div class="code">${esc(code)}</div>` : ''}<div class="name">${esc(title)}</div>
       <div class="path">${esc(r.m)} · ${esc(r.g === last ? r.p.split('/').slice(-2).join(' / ') : last)}</div>
-      <div class="meta">${r.l ? '<span class="tag shop">stemOS</span>' : ''}${r.x ? '<span class="tag eq" title="Adicionada por ' + esc(r.b || 'alguém da equipe') + '">Equipe</span>' : ''}${r.f ? '<span class="tag">FRC</span>' : ''}<span class="sz">${r.s ? r.s + ' MB' : ''}</span></div></div>
+      <div class="meta">${r.l ? '<span class="tag shop">stemOS</span>' : ''}${r.x ? '<span class="tag eq" title="Adicionada por ' + esc(r.b || 'alguém da equipe') + '">' + esc(r.gr || 'Equipe') + '</span>' : ''}${r.f ? '<span class="tag">FRC</span>' : ''}<span class="sz">${r.s ? r.s + ' MB' : ''}</span></div></div>
     </div>`; }).join('') : '<div class="empty">Nenhuma peça encontrada. Tente outra palavra ou limpe os filtros.</div>';
   $('count').textContent = list.length.toLocaleString('pt-BR') + ' peças';
   $('more').hidden = shown >= list.length;
