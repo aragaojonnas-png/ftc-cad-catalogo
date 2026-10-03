@@ -57,12 +57,17 @@ try {
         Get-File ($base + 'abrir.ps1') ($PSCommandPath + '.novo')   # troca no fim desta execucao
         [IO.File]::WriteAllText($verFile, $remoto)
         Add-Content -LiteralPath $log -Value ("{0}  atualizado para {1}" -f (Get-Date -Format 'yyyy-MM-dd HH:mm'), $remoto)
-        # pecas novas (respeita o limite de 20 MB e ignora FRC, como o instalador)
-        $lista = Get-Content -LiteralPath (Join-Path $root 'manifesto.json') -Raw -Encoding UTF8 | ConvertFrom-Json
-        foreach ($e in $lista) {
-            if ($e.d.StartsWith('REV/ION') -or $e.d.Contains('Robotics Competition')) { continue }
-            if ($e.s -gt 20MB) { continue }
-            if (-not [IO.File]::Exists((Join-Path $root ($e.d -replace '/', '\')))) { $novas++ }
+        # so no modo "tudo" (instalado com Instalar-tudo): baixa as pecas novas sozinho. No modo normal, cada peca e baixada quando voce clica nela.
+        $modo = ''
+        try { $modo = [string](Get-Content -LiteralPath (Join-Path $root 'config.json') -Raw -Encoding UTF8 | ConvertFrom-Json).modo } catch {}
+        if ($modo -eq 'tudo') {
+            $lista = Get-Content -LiteralPath (Join-Path $root 'manifesto.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+            foreach ($e in $lista) {
+                if ($e.d.StartsWith('REV/ION') -or $e.d.Contains('Robotics Competition')) { continue }
+                if ($e.s -gt 20MB) { continue }
+                if (-not [IO.File]::Exists((Join-Path $root ($e.d -replace '/', '\')))) { $novas++ }
+            }
+
         }
     }
 } catch {
@@ -80,7 +85,7 @@ if ($novas -gt 0) {
 # ---- pecas da equipe (pasta compartilhada): registra o botao do catalogo e atualiza a lista ----
 try {
     $eq = Join-Path $root 'equipe.ps1'
-    if (Test-Path -LiteralPath $eq) { . $eq; Register-FtcProtocol $root; [void](Update-Extras $root); [void](Set-FtcShortcuts $root -SoExistentes) }
+    if (Test-Path -LiteralPath $eq) { . $eq; Register-FtcProtocol $root; [void](Update-Extras $root); [void](Update-Baixadas $root); [void](Set-FtcShortcuts $root -SoExistentes) }
 } catch {
     Add-Content -LiteralPath $log -Value ("{0}  equipe: {1}" -f (Get-Date -Format 'yyyy-MM-dd HH:mm'), $_.Exception.Message)
 }

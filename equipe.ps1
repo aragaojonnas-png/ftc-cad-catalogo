@@ -11,21 +11,34 @@ $script:TiposFtc = @(
 
 function Get-ConfigPath($root) { Join-Path $root 'config.json' }
 
-function Get-PastaEquipe($root) {
+function Get-Cfg($root) {
+    $h = @{}
     $p = Get-ConfigPath $root
     if (Test-Path -LiteralPath $p) {
-        try {
-            $c = Get-Content -LiteralPath $p -Raw -Encoding UTF8 | ConvertFrom-Json
-            if ($c.pastaEquipe -and (Test-Path -LiteralPath $c.pastaEquipe)) { return [string]$c.pastaEquipe }
-        } catch {}
+        try { $o = Get-Content -LiteralPath $p -Raw -Encoding UTF8 | ConvertFrom-Json
+              foreach ($pr in $o.PSObject.Properties) { $h[$pr.Name] = $pr.Value } } catch {}
     }
+    return $h
+}
+
+function Set-Cfg($root, $chave, $valor) {
+    $h = Get-Cfg $root
+    $h[$chave] = $valor
+    $o = New-Object psobject
+    foreach ($k in $h.Keys) { Add-Member -InputObject $o -NotePropertyName $k -NotePropertyValue $h[$k] }
+    [IO.File]::WriteAllText((Get-ConfigPath $root), ($o | ConvertTo-Json), (New-Object Text.UTF8Encoding($true)))
+}
+
+function Get-PastaEquipe($root) {
+    $c = Get-Cfg $root
+    if ($c['pastaEquipe'] -and (Test-Path -LiteralPath $c['pastaEquipe'])) { return [string]$c['pastaEquipe'] }
     return $null
 }
 
-function Set-PastaEquipe($root, $pasta) {
-    $obj = New-Object psobject -Property @{ pastaEquipe = $pasta }
-    [IO.File]::WriteAllText((Get-ConfigPath $root), ($obj | ConvertTo-Json), (New-Object Text.UTF8Encoding($true)))
-}
+function Set-PastaEquipe($root, $pasta) { Set-Cfg $root 'pastaEquipe' $pasta }
+
+# 'tudo' = o abrir.ps1 baixa pecas novas sozinho; qualquer outra coisa = so baixa quando voce clica na peca
+function Get-Modo($root) { $c = Get-Cfg $root; if ($c['modo'] -eq 'tudo') { return 'tudo' } else { return 'demanda' } }
 
 # ---- aparencia de aplicativo: lancador sem janela de terminal e icone proprio ----
 $script:LauncherVbs = @'
@@ -210,4 +223,93 @@ function Get-Grupos($pasta) {
         }
     }
     return @($g | Sort-Object)
+}
+
+# ---- pecas baixadas no PC (para o catalogo mostrar "no PC" / "baixar") ----
+function Update-Baixadas($root) {
+    $saida = Join-Path $root 'baixadas.js'
+    $raiz = ([IO.Path]::GetFullPath($root)).TrimEnd('\', '/')
+    $lista = New-Object System.Collections.ArrayList
+    foreach ($f in Get-ChildItem -LiteralPath $raiz -Recurse -File -ErrorAction SilentlyContinue) {
+        if ($f.Extension -notmatch '^\.(step|stp)$') { continue }
+        $rel = $f.FullName.Substring($raiz.Length + 1).Replace('\', '/')
+        if ($rel.StartsWith('_KITS', [StringComparison]::OrdinalIgnoreCase)) { continue }
+        [void]$lista.Add(($rel -replace '\.(step|stp)$', '').ToLowerInvariant())
+    }
+    $json = if ($lista.Count -gt 0) { ConvertTo-Json -InputObject @($lista.ToArray()) -Compress } else { '[]' }
+    [IO.File]::WriteAllText($saida, ('window.BAIXADAS = ' + $json + ';'), (New-Object Text.UTF8Encoding($false)))
+    return $lista.Count
+}
+
+# ---- baixa UMA peca (sob demanda). $aoProgresso recebe (bytesLidos, bytesTotal) e devolve $true para cancelar. ----
+function Receber-Arquivo($url, $tmp, $aoProgresso) {
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    $req = [Net.HttpWebRequest]::Create($url)
+    $req.UserAgent = 'Mozilla/5.0'; $req.Timeout = 30000; $req.ReadWriteTimeout = 30000
+    $resp = $req.GetResponse()
+    $entrada = $null; $saida = $null
+    try {
+        $len = $resp.ContentLength
+        $entrada = $resp.GetResponseStream()
+        $saida = [IO.File]::Create($tmp)
+        $buf = New-Object byte[] 65536
+        $tot = [int64]0
+        while (($n = $entrada.Read($buf, 0, $buf.Length)) -gt 0) {
+            $saida.Write($buf, 0, $n); $tot += $n
+            if (& $aoProgresso $tot $len) { return $false }
+        }
+        return $true
+    } finally {
+        if ($saida) { $saida.Close() }
+        if ($entrada) { $entrada.Close() }
+        $resp.Close()
+    }
+}
+
+# Extrai (se for ZIP, inclusive ZIP dentro de ZIP) e confere o cabecalho STEP. $item vem do manifesto.json (d, u, c).
+function Instalar-PecaBaixada($root, $item, $tmp) {
+    Add-Type -AssemblyName System.IO.Compression
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    $final = Join-Path $root ($item.d -replace '/', '\')
+    $dir = Split-Path -Parent $final
+    if (-not [IO.Directory]::Exists($dir)) { [void][IO.Directory]::CreateDirectory($dir) }
+    $parcial = $final + '.part'
+    $chain = @($item.c | Where-Object { $_ })
+    try {
+        if ($chain.Count -eq 0) {
+            [IO.File]::Copy($tmp, $parcial, $true)
+        } else {
+            $fileStream = [IO.File]::OpenRead($tmp)
+            $zip = New-Object System.IO.Compression.ZipArchive($fileStream, [System.IO.Compression.ZipArchiveMode]::Read)
+            for ($i = 0; $i -lt $chain.Count; $i++) {
+                $name = ([string]$chain[$i]).Replace('\', '/')
+                $entry = $null
+                foreach ($en in $zip.Entries) { if ($en.FullName.Replace('\', '/') -eq $name) { $entry = $en; break } }
+                if ($null -eq $entry) { throw "entrada nao achada no zip: $name" }
+                if ($i -lt $chain.Count - 1) {
+                    $ms = New-Object System.IO.MemoryStream
+                    $es = $entry.Open(); $es.CopyTo($ms); $es.Close(); $ms.Position = 0
+                    $zip = New-Object System.IO.Compression.ZipArchive($ms, [System.IO.Compression.ZipArchiveMode]::Read)
+                } else {
+                    $es = $entry.Open(); $fs = [IO.File]::Create($parcial)
+                    $es.CopyTo($fs); $fs.Close(); $es.Close()
+                }
+            }
+            $fileStream.Close()
+        }
+        $fs2 = [IO.File]::OpenRead($parcial); $b = New-Object byte[] 40; $n = $fs2.Read($b, 0, 40); $fs2.Close()
+        if ([Text.Encoding]::ASCII.GetString($b, 0, $n) -notmatch 'ISO-10303') { throw 'o arquivo baixado nao e um STEP' }
+        if ([IO.File]::Exists($final)) { [IO.File]::Delete($final) }
+        [IO.File]::Move($parcial, $final)
+    } finally {
+        if ([IO.File]::Exists($parcial)) { try { [IO.File]::Delete($parcial) } catch {} }
+    }
+    return $final
+}
+
+function Find-ItemManifesto($root, $chave) {
+    $lista = Get-Content -LiteralPath (Join-Path $root 'manifesto.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+    $k = $chave.ToLowerInvariant() -replace '\.(step|stp)$', ''
+    foreach ($e in $lista) { if ((([string]$e.d).ToLowerInvariant() -replace '\.(step|stp)$', '') -eq $k) { return $e } }
+    return $null
 }

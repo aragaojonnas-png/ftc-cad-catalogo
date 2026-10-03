@@ -11,13 +11,15 @@
     -Threads 6       downloads em paralelo
     -SemAtalho       nao cria os atalhos (area de trabalho e menu Iniciar)
     -SemJanela       usa o modo texto (console) em vez da janela
+    -SobDemanda      nao baixa pecas agora: cada peca e baixada quando voce clica nela no catalogo
 #>
 param(
     [int]$MaxMB = 20,
     [switch]$IncluirFRC,
     [int]$Threads = 6,
     [switch]$SemAtalho,
-    [switch]$SemJanela
+    [switch]$SemJanela,
+    [switch]$SobDemanda
 )
 
 $ErrorActionPreference = 'Stop'
@@ -55,6 +57,7 @@ foreach ($e in $all) {
     [void]$todo.Add($e)
 }
 
+if ($SobDemanda) { $todo.Clear() }
 $groups = @($todo | Group-Object -Property u)
 $sumMB = [math]::Round((($todo | Measure-Object -Property s -Sum).Sum) / 1MB)
 Write-Host ("Arquivos a criar: {0} (em {1} downloads, ~{2} MB depois de extraidos)" -f $todo.Count, $groups.Count, $sumMB)
@@ -277,6 +280,10 @@ if ($failures.Count -gt 0) {
     Write-Host "Falhas listadas em: $logPath" -ForegroundColor Yellow
 }
 
+# ---- modo de instalacao e lista de pecas ja baixadas (o catalogo mostra "no PC" / "baixar") ----
+try { $eq0 = Join-Path $root 'equipe.ps1'
+      if (Test-Path -LiteralPath $eq0) { . $eq0; if (-not $cancelou) { Set-Cfg $root 'modo' $(if ($SobDemanda) { 'demanda' } else { 'tudo' }) }; [void](Update-Baixadas $root) } } catch {}
+
 # ---- botao "+ Adicionar peca" do catalogo (endereco ftccad://, so para este usuario) ----
 try { $eq = Join-Path $root 'equipe.ps1'; if (Test-Path -LiteralPath $eq) { . $eq; Register-FtcProtocol $root; [void](Update-Extras $root) } } catch {}
 
@@ -329,7 +336,8 @@ if ($cancelou) {
 } elseif ($failures.Count -gt 0) {
     Show-Fim ("Concluido com {0} falhas ({1} arquivos baixados).`r`nA lista esta em falhas.txt. Rode o instalador de novo para tentar outra vez.{2}" -f $failures.Count, $created, $atalhoMsg) 'Warning'
 } elseif ($nothing) {
-    Show-Fim ("Tudo certo: todas as pecas ja estao na pasta.$atalhoMsg") 'Information'
+    if ($SobDemanda) { Show-Fim ("Pronto! O catalogo esta instalado.`r`n`r`nAs pecas sao baixadas so quando voce clica nelas no catalogo, entao ele ocupa pouco espaco.$atalhoMsg`r`n`r`nPasta: $root") 'Information' }
+    else { Show-Fim ("Tudo certo: todas as pecas ja estao na pasta.$atalhoMsg") 'Information' }
 } else {
     Show-Fim ("Pronto! {0} arquivos baixados.$atalhoMsg`r`n`r`nPasta: {1}" -f $created, $root) 'Information'
 }

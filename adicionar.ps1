@@ -36,6 +36,76 @@ if ($Url -match '^ftccad://remover') {
     exit 0
 }
 
+# ---- modo "baixar" (clique numa peca ainda nao baixada: ftccad://baixar?arquivo=<pasta/nome>) ----
+if ($Url -match '^ftccad://baixar') {
+    $arq = $null
+    if ($Url -match '[?&]arquivo=([^&]+)') { $arq = [Uri]::UnescapeDataString($Matches[1]) }
+    if (-not $arq) { exit 0 }
+    $it = Find-ItemManifesto $root $arq
+    if (-not $it) { [void][System.Windows.Forms.MessageBox]::Show('Nao encontrei essa peca na lista do catalogo.', 'Baixar peca - FTC_CAD', 'OK', 'Warning'); exit 0 }
+    $destino = Join-Path $root ($it.d -replace '/', '\')
+    $nomePeca = [IO.Path]::GetFileNameWithoutExtension($destino)
+
+    $bg = [Drawing.Color]::FromArgb(19, 14, 34); $fg = [Drawing.Color]::FromArgb(236, 230, 250)
+    $w = New-Object Windows.Forms.Form
+    $w.Text = 'Baixar peca - FTC_CAD'; $w.ClientSize = New-Object Drawing.Size(520, 160); $w.StartPosition = 'CenterScreen'
+    $w.FormBorderStyle = 'FixedDialog'; $w.MaximizeBox = $false; $w.BackColor = $bg; $w.ForeColor = $fg
+    $w.Font = New-Object Drawing.Font('Segoe UI', 10)
+    try { if ($icoApp) { $w.Icon = New-Object Drawing.Icon($icoApp) } } catch {}
+    $lN = New-Object Windows.Forms.Label; $lN.Text = $nomePeca; $lN.Font = New-Object Drawing.Font('Segoe UI Semibold', 11)
+    $lN.ForeColor = [Drawing.Color]::FromArgb(182, 146, 246); $lN.AutoEllipsis = $true; $lN.SetBounds(20, 14, 480, 26)
+    $lS = New-Object Windows.Forms.Label; $lS.Text = 'Conectando...'; $lS.SetBounds(20, 46, 480, 22)
+    $bar = New-Object Windows.Forms.ProgressBar; $bar.SetBounds(20, 74, 480, 22); $bar.Minimum = 0; $bar.Maximum = 1000
+    $bC = New-Object Windows.Forms.Button; $bC.Text = 'Cancelar'; $bC.SetBounds(380, 112, 120, 32); $bC.FlatStyle = 'Flat'
+    $bC.BackColor = [Drawing.Color]::FromArgb(124, 58, 237); $bC.ForeColor = [Drawing.Color]::White; $bC.FlatAppearance.BorderSize = 0
+    $w.Controls.AddRange(@($lN, $lS, $bar, $bC))
+    $script:cancelou = $false
+    $bC.Add_Click({ $script:cancelou = $true; $bC.Enabled = $false; $lS.Text = 'Cancelando...' })
+    $w.Add_FormClosing({ $script:cancelou = $true })
+    $w.Show(); [System.Windows.Forms.Application]::DoEvents()
+
+    $ok = $false; $erro = $null; $tmp = Join-Path ([IO.Path]::GetTempPath()) ([Guid]::NewGuid().ToString() + '.bin')
+    try {
+        if ([IO.File]::Exists($destino) -and ([IO.FileInfo]$destino).Length -gt 0) {
+            $ok = $true
+        } else {
+            $prog = {
+                param($lido, $total)
+                if ($total -gt 0) {
+                    $bar.Value = [math]::Min(1000, [int](1000 * $lido / $total))
+                    $lS.Text = ('Baixando... {0} de {1} MB' -f [math]::Round($lido / 1MB, 1), [math]::Round($total / 1MB, 1))
+                } else { $lS.Text = ('Baixando... {0} MB' -f [math]::Round($lido / 1MB, 1)) }
+                [System.Windows.Forms.Application]::DoEvents()
+                return $script:cancelou
+            }
+            $fim = Receber-Arquivo $it.u $tmp $prog
+            if ($fim) {
+                $bar.Style = 'Marquee'; $lS.Text = 'Extraindo e conferindo o arquivo...'; [System.Windows.Forms.Application]::DoEvents()
+                [void](Instalar-PecaBaixada $root $it $tmp)
+                $ok = $true
+            }
+        }
+    } catch { $erro = $_.Exception.Message }
+    finally { if ([IO.File]::Exists($tmp)) { try { [IO.File]::Delete($tmp) } catch {} } }
+
+    if ($ok) {
+        try { Set-Clipboard -Value $destino } catch {}
+        try { [void](Update-Baixadas $root) } catch {}
+        $bar.Style = 'Blocks'; $bar.Value = 1000
+        $lS.Text = 'Pronto! O caminho do arquivo foi copiado.'; $bC.Text = 'Fechar'; $bC.Enabled = $true
+        $script:cancelou = $false
+        $bC.Add_Click({ $w.Close() })
+        [System.Windows.Forms.Application]::DoEvents()
+        for ($t = 0; $t -lt 15 -and $w.Visible; $t++) { Start-Sleep -Milliseconds 100; [System.Windows.Forms.Application]::DoEvents() }
+        if ($w.Visible) { $w.Close() }
+    } else {
+        $w.Hide()
+        if ($erro) { [void][System.Windows.Forms.MessageBox]::Show(("Nao consegui baixar:`r`n`r`n" + $erro + "`r`n`r`nConfira a internet e tente de novo."), 'Baixar peca - FTC_CAD', 'OK', 'Error') }
+        $w.Close()
+    }
+    exit 0
+}
+
 # ---- 1) pasta compartilhada (so na primeira vez) ----
 $pasta = Get-PastaEquipe $root
 if (-not $pasta) {
