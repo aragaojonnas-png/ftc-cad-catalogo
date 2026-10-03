@@ -180,6 +180,7 @@ if ($gui) {
         $btn.BackColor = [Drawing.Color]::FromArgb(124, 58, 237)
         $btn.ForeColor = [Drawing.Color]::White
         $btn.FlatAppearance.BorderSize = 0
+        try { . (Join-Path $root 'equipe.ps1'); $icoApp = Ensure-Icon $root; if ($icoApp) { $form.Icon = New-Object Drawing.Icon($icoApp) } } catch {}
         $form.Controls.AddRange(@($lblTit, $lblSt, $bar, $lblDet, $btn))
         $script:cancelado = $false
         $script:concluido = $false
@@ -316,6 +317,7 @@ if (-not $SemAtalho -and -not $cancelou) {
             $sc.WorkingDirectory = $root
             $sc.Save()
         }
+        try { if (Get-Command Set-FtcShortcuts -ErrorAction SilentlyContinue) { [void](Set-FtcShortcuts $root) } } catch {}
         $atalhoMsg = "`r`n`r`nAtalho 'Catalogo FTC_CAD' criado na area de trabalho e no menu Iniciar."
     } catch {
         $atalhoMsg = "`r`n`r`nNao consegui criar os atalhos (" + $_.Exception.Message + "). Abra o catalogo.html direto da pasta."

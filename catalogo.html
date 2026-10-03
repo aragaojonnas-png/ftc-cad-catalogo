@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Catálogo FTC_CAD</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%237c3aed'/%3E%3Ctext x='32' y='42' font-family='Segoe UI,Arial,sans-serif' font-weight='700' font-size='26' text-anchor='middle' fill='white'%3EFTC%3C/text%3E%3C/svg%3E">
 <style>
 :root{color-scheme:dark;--bg:#130e22;--bg2:#1a1330;--card:#1e1637;--ink:#eee9fa;--mute:#a79dc8;--line:#33285a;--acc:#b692f6;--accbg:#2c2050;--btn:#7c3aed;--shop:#8af0ac;--shopbg:#1a3a2a;--img:#fff}
 *{box-sizing:border-box}
@@ -43,6 +44,8 @@ main{padding:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200
 #add{background:var(--btn);color:#fff;text-decoration:none;border-radius:8px;padding:6px 12px;font-size:13px;font-weight:600;white-space:nowrap}
 #add:hover{filter:brightness(1.15)}
 .tag{background:var(--accbg);color:var(--acc);border-radius:6px;padding:1px 7px;font-size:11.5px;font-weight:600}
+.rm{margin-left:4px;font-size:11.5px;color:#ff9db0;text-decoration:none;border:1px solid #5a2a3a;border-radius:6px;padding:1px 8px}
+.rm:hover{background:#4a1f2e;color:#ffc2cf}
 .tag.eq{background:#2a1f4d;color:#d6c2ff}
 .tag.shop{background:var(--shopbg);color:var(--shop)}
 #more{display:block;margin:4px auto 28px;padding:9px 20px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;font:inherit}
@@ -77,14 +80,34 @@ main{padding:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200
 <script>
 const D = JSON.parse(document.getElementById('data').textContent);
 const $ = id => document.getElementById(id);
-(window.EXTRAS || []).forEach(e => { D.rows.push(e);
-  if (!D.mfrs.includes(e.m)) D.mfrs.push(e.m);
-  if (!D.tipos.includes(e.g)) D.tipos.splice(Math.max(0, D.tipos.length - 1), 0, e.g);
-  const c = e.p.split('/').slice(0, 2).join('/'); if (!D.cats.includes(c)) D.cats.push(c); });
-D.cats.sort();
+const BASE = {rows: D.rows.slice(), mfrs: D.mfrs.slice(), tipos: D.tipos.slice(), cats: D.cats.slice()};
+const norm = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 const mfrOk = (r, m) => !m || (m === 'stemOS' ? r.l : m === '__eq' ? r.x : r.m === m);
+let EXJ = '';
+function mergeExtras(){
+  const ex = window.EXTRAS || []; EXJ = JSON.stringify(ex);
+  D.rows = BASE.rows.concat(ex); D.mfrs = BASE.mfrs.slice(); D.tipos = BASE.tipos.slice(); D.cats = BASE.cats.slice();
+  ex.forEach(e => {
+    if (!D.mfrs.includes(e.m)) D.mfrs.push(e.m);
+    if (!D.tipos.includes(e.g)) D.tipos.splice(Math.max(0, D.tipos.length - 1), 0, e.g);
+    const c = e.p.split('/').slice(0, 2).join('/'); if (!D.cats.includes(c)) D.cats.push(c); });
+  D.mfrs.sort(); D.cats.sort();
+  D.rows.forEach(r => { if (!r.k) r.k = norm(r.n + ' ' + r.p + ' ' + r.t + ' ' + r.g); });
+  const m0 = $('mfr').value, c0 = $('cat').value;
+  $('mfr').innerHTML = '<option value="">todos os fabricantes e lojas</option>' + D.mfrs.concat(['stemOS']).concat(ex.length ? ['__eq'] : []).map(c => `<option value="${c}">${c === '__eq' ? 'adicionadas pela equipe' : c}</option>`).join('');
+  $('cat').innerHTML = '<option value="">todas as categorias</option>' + D.cats.map(c => `<option>${c}</option>`).join('');
+  $('mfr').value = m0; $('cat').value = c0;
+}
+// ao voltar para a janela (depois de adicionar/remover uma peça), recarrega a lista da equipe sozinho
+let _ex = 0;
+window.addEventListener('focus', () => {
+  if (Date.now() - _ex < 1500) return; _ex = Date.now();
+  const sc = document.createElement('script'); sc.src = 'extras.js?t=' + Date.now();
+  sc.onload = () => { sc.remove(); if (JSON.stringify(window.EXTRAS || []) !== EXJ) { mergeExtras(); filter(); } };
+  sc.onerror = () => sc.remove();
+  document.head.appendChild(sc);
+});
 const PAGE = 200; let shown = PAGE, list = [];
-$('mfr').innerHTML = '<option value="">todos os fabricantes e lojas</option>' + D.mfrs.concat(['stemOS']).concat(D.rows.some(r => r.x) ? ['__eq'] : []).map(c => `<option value="${c}">${c === '__eq' ? 'adicionadas pela equipe' : c}</option>`).join('');
 let TIPO = '';
 function buildTabs(){
   const cnt = {}; D.rows.forEach(r => { if ((frcOn() || !r.f) && mfrOk(r, $('mfr').value)) cnt[r.g] = (cnt[r.g] || 0) + 1; });
@@ -95,9 +118,6 @@ function buildTabs(){
 }
 function frcOn(){ return $('frc').checked; }
 $('tabs').addEventListener('click', ev => { const t = ev.target.closest('.tab'); if (!t) return; TIPO = t.dataset.t; filter(); });
-$('cat').innerHTML = '<option value="">todas as categorias</option>' + D.cats.map(c => `<option>${c}</option>`).join('');
-const norm = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-D.rows.forEach(r => r.k = norm(r.n + ' ' + r.p + ' ' + r.t + ' ' + r.g));
 function esc(s){return s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function filter(){
   const terms = norm($('q').value).split(/\s+/).filter(Boolean), cat = $('cat').value, mfr = $('mfr').value, tp = TIPO, frc = $('frc').checked, sz = +$('sz').value;
@@ -115,7 +135,7 @@ function draw(){
       <div class="ph ${r.i ? '' : 'none'}">${r.i ? `<img loading="lazy" referrerpolicy="no-referrer" src="${esc(r.i)}" alt="">` : 'sem foto'}</div>
       <div class="b">${code ? `<div class="code">${esc(code)}</div>` : ''}<div class="name">${esc(title)}</div>
       <div class="path">${esc(r.m)} · ${esc(r.g === last ? r.p.split('/').slice(-2).join(' / ') : last)}</div>
-      <div class="meta">${r.l ? '<span class="tag shop">stemOS</span>' : ''}${r.x ? '<span class="tag eq" title="Adicionada por ' + esc(r.b || 'alguém da equipe') + '">' + esc(r.gr || 'Equipe') + '</span>' : ''}${r.f ? '<span class="tag">FRC</span>' : ''}<span class="sz">${r.s ? r.s + ' MB' : ''}</span></div></div>
+      <div class="meta">${r.l ? '<span class="tag shop">stemOS</span>' : ''}${r.x ? '<span class="tag eq" title="Adicionada por ' + esc(r.b || 'alguém da equipe') + '">' + esc(r.gr || 'Equipe') + '</span>' : ''}${r.f ? '<span class="tag">FRC</span>' : ''}${r.x ? '<a class="rm" href="ftccad://remover?arquivo=' + encodeURIComponent(r.a) + '" title="Remover esta peça da pasta da equipe">remover</a>' : ''}<span class="sz">${r.s ? r.s + ' MB' : ''}</span></div></div>
     </div>`; }).join('') : '<div class="empty">Nenhuma peça encontrada. Tente outra palavra ou limpe os filtros.</div>';
   $('count').textContent = list.length.toLocaleString('pt-BR') + ' peças';
   $('more').hidden = shown >= list.length;
@@ -136,11 +156,12 @@ function copyCard(c){
   const r = list[+c.dataset.i], path = r.a ? r.a : baseDir() + r.p.replace(/\//g, '\\') + '\\' + r.n + '.step';
   copyText(path).then(() => toast('Caminho copiado: ' + path), () => { window.prompt('Copie o caminho (Ctrl+C):', path); });
 }
-$('grid').addEventListener('click', ev => copyCard(ev.target.closest('.card')));
+$('grid').addEventListener('click', ev => { if (ev.target.closest('.rm')) return; copyCard(ev.target.closest('.card')); });
 $('grid').addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); copyCard(ev.target.closest('.card')); } });
 function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');setTimeout(()=>e.classList.remove('on'),3500)}
 $('more').onclick = () => { shown += PAGE; draw(); };
 ['q','mfr','cat','frc','sz'].forEach(id => $(id).addEventListener(id === 'q' ? 'input' : 'change', filter));
+mergeExtras();
 filter();
 </script>
 </body>

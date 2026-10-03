@@ -16,6 +16,26 @@ Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 [System.Windows.Forms.Application]::EnableVisualStyles()
 
+# ---- modo "remover" (botao "remover" do catalogo: ftccad://remover?arquivo=...) ----
+$icoApp = Ensure-Icon $root
+if ($Url -match '^ftccad://remover') {
+    $arq = $null
+    if ($Url -match '[?&]arquivo=([^&]+)') { $arq = [Uri]::UnescapeDataString($Matches[1]) }
+    if (-not $arq) { exit 0 }
+    try { $info = Get-InfoPeca $root $arq }
+    catch {
+        [void][System.Windows.Forms.MessageBox]::Show($_.Exception.Message, 'Remover peca - FTC_CAD', 'OK', 'Warning')
+        exit 0
+    }
+    $txt = ("Remover a peca '{0}'?`r`n`r`nO arquivo vai para a Lixeira e some do catalogo de toda a equipe quando o Google Drive sincronizar." -f $info.nome)
+    $r = [System.Windows.Forms.MessageBox]::Show($txt, 'Remover peca - FTC_CAD', 'YesNo', 'Warning', 'Button2')
+    if ($r -eq 'Yes') {
+        Remove-Peca $root $info
+        [void][System.Windows.Forms.MessageBox]::Show('Peca removida. O catalogo se atualiza sozinho ao voltar para a janela dele (ou aperte F5).', 'Remover peca - FTC_CAD', 'OK', 'Information')
+    }
+    exit 0
+}
+
 # ---- 1) pasta compartilhada (so na primeira vez) ----
 $pasta = Get-PastaEquipe $root
 if (-not $pasta) {
@@ -33,6 +53,7 @@ $campo = [Drawing.Color]::FromArgb(30, 22, 55)
 $f = New-Object Windows.Forms.Form
 $f.Text = 'Adicionar peca - FTC_CAD'; $f.ClientSize = New-Object Drawing.Size(560, 492)
 $f.StartPosition = 'CenterScreen'; $f.FormBorderStyle = 'FixedDialog'; $f.MaximizeBox = $false
+try { if ($icoApp) { $f.Icon = New-Object Drawing.Icon($icoApp) } } catch {}
 $f.BackColor = $bg; $f.ForeColor = $fg; $f.Font = New-Object Drawing.Font('Segoe UI', 10)
 
 function Add-Rotulo($txt, $y) { $l = New-Object Windows.Forms.Label; $l.Text = $txt; $l.SetBounds(20, $y, 520, 20); $f.Controls.Add($l) }
@@ -133,7 +154,7 @@ $btnOk.Add_Click({
         $feitas++
     }
     [void](Update-Extras $root)
-    $msg = ("{0} peca(s) adicionada(s) em:`r`n{1}`r`n`r`nAperte F5 no catalogo para ver. O Google Drive envia para a equipe em alguns instantes." -f $feitas, $dirTipo)
+    $msg = ("{0} peca(s) adicionada(s) em:`r`n{1}`r`n`r`nO catalogo se atualiza sozinho ao voltar para ele (ou aperte F5). O Google Drive envia para a equipe em alguns instantes." -f $feitas, $dirTipo)
     if ($puladas.Count -gt 0) { $msg += ("`r`n`r`nNao substituidas: " + ($puladas -join ', ')) }
     [void][System.Windows.Forms.MessageBox]::Show($msg, 'Adicionar peca', 'OK', 'Information')
     $f.Close()

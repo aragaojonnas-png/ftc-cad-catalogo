@@ -11,3 +11,5 @@ Os modelos STEP **não** estão aqui: o instalador baixa cada um direto do site 
 ## Peças da equipe
 
 O botão **+ Adicionar peça** do catálogo abre `adicionar.ps1`, que copia um `.step` (e um `.json` com nome, tipo, fabricante, link e foto) para uma pasta compartilhada sincronizada pelo Google Drive. `equipe.ps1` lê essa pasta e gera o `extras.js` que o catálogo carrega.
+
+Para parecer um aplicativo, os atalhos e botões abrem os scripts pelo `ftc.vbs` (sem janela de terminal) e usam o ícone `ftc.ico`. O botão **remover** (só nas peças da equipe) abre `adicionar.ps1` em modo remover: pede confirmação, só aceita arquivos dentro da pasta da equipe que tenham o `.json` da peça, e manda tudo para a Lixeira.
