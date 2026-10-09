@@ -142,8 +142,6 @@ function filter(){
 }
 function split(n){ const m = n.match(/^(.+?) - (.+)$/); let code = m ? m[1] : '', t = m ? m[2] : n;
   t = t.replace(/ \[([^\]]+)\]$/, (s, x) => x === code ? '' : s); return [code, t]; }
-function split(n){ const m = n.match(/^(.+?) - (.+)$/); let code = m ? m[1] : '', t = m ? m[2] : n;
-  t = t.replace(/ \[([^\]]+)\]$/, (s, x) => x === code ? '' : s); return [code, t]; }
 function draw(){
   const part = list.slice(0, shown);
   $('grid').innerHTML = part.length ? part.map((r, i) => { const [code, title] = split(r.n), last = r.p.split('/').pop();

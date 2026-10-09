@@ -213,8 +213,6 @@ function filter(){
 }
 function split(n){ const m = n.match(/^(.+?) - (.+)$/); let code = m ? m[1] : '', t = m ? m[2] : n;
   t = t.replace(/ \[([^\]]+)\]$/, (s, x) => x === code ? '' : s); return [code, t]; }
-function split(n){ const m = n.match(/^(.+?) - (.+)$/); let code = m ? m[1] : '', t = m ? m[2] : n;
-  t = t.replace(/ \[([^\]]+)\]$/, (s, x) => x === code ? '' : s); return [code, t]; }
 function draw(){
   const part = list.slice(0, shown);
   $('grid').innerHTML = part.length ? part.map((r, i) => { const [code, title] = split(r.n), last = r.p.split('/').pop();
@@ -257,5 +255,6 @@ filter();
 </body>
 </html>
 """
-open("../../../catalogo.html", "w", encoding="utf-8").write(page.replace("__DATA__", data))
-print("catalogo.html: %.2f MB" % (os.path.getsize("catalogo.html") / 1e6))
+OUT = os.path.abspath("../../../catalogo.html")
+open(OUT, "w", encoding="utf-8").write(page.replace("__DATA__", data))
+print("catalogo.html: %.2f MB" % (os.path.getsize(OUT) / 1e6))
