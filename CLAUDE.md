@@ -5,8 +5,9 @@ Preferencias dele: resposta objetiva e proporcional, perguntar quando houver duv
 
 ## Como funciona
 - `FTC_CAD.exe` (codigo: `src/FtcCad.cs`, C# 5, .NET Framework 4.5+, WinForms, sem dependencias): abre o catalogo (`catalogo.html`) como app no Edge/Chrome (`--app`), atualiza sozinho, baixa pecas sob demanda, gerencia pecas da equipe.
-- Modos: sem argumento = abrir (na 1a vez mostra o instalador); `--instalar`; `ftccad://baixar?arquivo=<pasta/nome>`, `ftccad://remover?arquivo=<caminho>`, `ftccad://adicionar` (o catalogo chama esses enderecos; o app os registra em HKCU\Software\Classes\ftccad).
-- Arquivos que o app le/gera ao lado do .exe (pasta do usuario): `catalogo.html`, `manifesto.json` (d=destino, u=url, c=cadeia de entradas zip, s=tamanho), `versao.txt`, `config.json` (pastaEquipe, modo=tudo|demanda), `extras.js` (pecas da equipe), `baixadas.js` (pecas ja baixadas).
+- Modos: sem argumento = abrir (na 1a vez mostra o instalador); `--instalar`; `ftccad://baixar?arquivo=<pasta/nome>`, `ftccad://remover?arquivo=<caminho>`, `ftccad://adicionar`, `ftccad://estoque?arquivo=<chave>&tem=0|1&qtd=<n>` (o catalogo chama esses enderecos; o app os registra em HKCU\Software\Classes\ftccad).
+- Arquivos que o app le/gera ao lado do .exe (pasta do usuario): `catalogo.html`, `manifesto.json` (d=destino, u=url, c=cadeia de entradas zip, s=tamanho), `versao.txt`, `config.json` (pastaEquipe, modo=tudo|demanda), `extras.js` (pecas da equipe), `baixadas.js` (pecas ja baixadas), `estoque.js` (pecas disponiveis na equipe).
+- Estoque da equipe ("disponivel", quantidade opcional): `estoque.json` na raiz da pasta da equipe (Drive), `{"<pasta/nome da peca em minusculas, sem .step>": {"q": quantidade}}`. O catalogo mostra o botao "+ tenho" em cada cartao e o filtro "so as disponiveis"; o app grava via `ftccad://estoque` (le o arquivo na hora, nunca sobrescreve se estiver ilegivel, guarda `estoque.json.bak`) e gera `estoque.js` ao abrir. A chave e `pasta/nome` do cartao, entao renomear/mover uma peca no catalogo perde a marcacao dela. O campo `dn` das linhas do catalogo e o titulo diferenciado (nao confundir com `v`, que e o fabricante nas pecas da equipe).
 - Pecas da equipe: pasta do Google Drive `Pecas\<Tipo>\arquivo.step` + `arquivo.step.json`; fotos em `Pecas\_fotos`.
 
 ## Atualizacao automatica (IMPORTANTE)
