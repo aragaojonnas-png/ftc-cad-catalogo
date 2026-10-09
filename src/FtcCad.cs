@@ -106,6 +106,17 @@ namespace FtcCad
         {
             string p = Get("pastaEquipe"); return (p != "" && Directory.Exists(p)) ? p : null;
         }
+        // pergunta a pasta compartilhada da equipe (Google Drive) e guarda; devolve null se cancelar
+        public static string PedirPastaEquipe(string titulo)
+        {
+            Tema.Msg("Escolha a pasta compartilhada da equipe.\r\n\r\nEla precisa ser uma pasta do seu computador que o Google Drive para computador sincroniza (por exemplo dentro de 'Meu Drive' ou 'Drives compartilhados'). Todos da equipe escolhem a mesma pasta do Drive.", titulo, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            using (FolderBrowserDialog fb = new FolderBrowserDialog())
+            {
+                fb.Description = "Pasta compartilhada da equipe (sincronizada pelo Google Drive)";
+                if (fb.ShowDialog() != DialogResult.OK) return null;
+                Set("pastaEquipe", fb.SelectedPath); return fb.SelectedPath;
+            }
+        }
     }
 
     // ------------------------------------------------------------------ lista de pecas (manifesto.json)
@@ -297,6 +308,20 @@ namespace FtcCad
             return l.Count;
         }
 
+        // estoque.js: pecas que a equipe marcou como disponiveis (estoque.json fica na pasta compartilhada)
+        public static void Estoque()
+        {
+            string saida = Path.Combine(Program.Root, "estoque.js");
+            string pasta = Cfg.PastaEquipe();
+            Dictionary<string, object> d = new Dictionary<string, object>();
+            if (pasta != null)
+            {
+                try { d = EstoqueEquipe.Ler(pasta); }
+                catch { return; }          // arquivo ilegivel (Drive sincronizando): mantem o estoque.js anterior
+            }
+            File.WriteAllText(saida, "window.ESTOQUE = " + Json.S().Serialize(d) + ";", new UTF8Encoding(false));
+        }
+
         public static List<string> Grupos(string pasta)
         {
             List<string> g = new List<string>();
@@ -474,6 +499,50 @@ namespace FtcCad
         }
     }
 
+    // ------------------------------------------------------------------ estoque da equipe (pecas disponiveis, com quantidade opcional)
+    // estoque.json na pasta compartilhada: { "<pasta/nome da peca em minusculas>": { "q": quantidade (opcional) } }
+    static class EstoqueEquipe
+    {
+        static string Arq(string pasta) { return Path.Combine(pasta, "estoque.json"); }
+
+        // le o estoque; lanca excecao se o arquivo existe mas nao da para ler (para nunca apagar o estoque da equipe por engano)
+        public static Dictionary<string, object> Ler(string pasta)
+        {
+            string p = Arq(pasta);
+            if (!File.Exists(p)) return new Dictionary<string, object>();
+            string txt = File.ReadAllText(p, Encoding.UTF8);
+            if (txt.Trim() == "") return new Dictionary<string, object>();
+            return Json.S().Deserialize<Dictionary<string, object>>(txt);
+        }
+
+        public static void Definir(string chave, bool tem, int qtd)
+        {
+            string titulo = "Estoque - FTC_CAD";
+            string pasta = Cfg.PastaEquipe();
+            if (pasta == null) pasta = Cfg.PedirPastaEquipe(titulo);
+            if (pasta == null) return;
+            Dictionary<string, object> d;
+            try { d = Ler(pasta); }       // le de novo na hora: outros PCs podem ter mudado
+            catch (Exception ex)
+            {
+                Tema.Msg("Não consegui ler o estoque.json da pasta da equipe (" + ex.Message + ").\r\n\r\nNada foi alterado. Espere o Google Drive terminar de sincronizar e tente de novo.", titulo, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+            chave = chave.Replace('\\', '/').ToLowerInvariant();
+            if (!tem) d.Remove(chave);
+            else
+            {
+                Dictionary<string, object> e = new Dictionary<string, object>();
+                if (qtd > 0) e["q"] = qtd;
+                d[chave] = e;
+            }
+            string alvo = Arq(pasta), tmp = alvo + ".tmp";
+            File.WriteAllText(tmp, Json.S().Serialize(d), new UTF8Encoding(false));
+            if (File.Exists(alvo)) File.Replace(tmp, alvo, alvo + ".bak"); else File.Move(tmp, alvo);
+            Listas.Estoque();
+        }
+    }
+
     // ------------------------------------------------------------------ adicionar peca da equipe
     static class Adicionar
     {
@@ -486,16 +555,8 @@ namespace FtcCad
         {
             string titulo = "Adicionar peça - FTC_CAD";
             string pasta = Cfg.PastaEquipe();
-            if (pasta == null)
-            {
-                Tema.Msg("Escolha a pasta compartilhada da equipe.\r\n\r\nEla precisa ser uma pasta do seu computador que o Google Drive para computador sincroniza (por exemplo dentro de 'Meu Drive' ou 'Drives compartilhados'). Todos da equipe escolhem a mesma pasta do Drive.", titulo, MessageBoxButtons.OK, MessageBoxIcon.Information);
-                using (FolderBrowserDialog fb = new FolderBrowserDialog())
-                {
-                    fb.Description = "Pasta compartilhada da equipe (sincronizada pelo Google Drive)";
-                    if (fb.ShowDialog() != DialogResult.OK) return;
-                    pasta = fb.SelectedPath; Cfg.Set("pastaEquipe", pasta);
-                }
-            }
+            if (pasta == null) pasta = Cfg.PedirPastaEquipe(titulo);
+            if (pasta == null) return;
             string pastaEq = pasta;
             Form f = Tema.Janela(titulo, 560, 500);
             string[] arquivos = new string[0];
@@ -682,7 +743,7 @@ namespace FtcCad
         {
             Cfg.Set("modo", tudo ? "tudo" : "demanda");
             Sistema.Protocolo();
-            Listas.Baixadas(); Listas.Extras();
+            Listas.Baixadas(); Listas.Extras(); try { Listas.Estoque(); } catch { }
             try { Sistema.Atalhos(false); } catch { }
         }
     }
@@ -722,6 +783,7 @@ namespace FtcCad
             try { Sistema.Protocolo(); } catch { }
             try { Listas.Extras(); } catch { }
             try { Listas.Baixadas(); } catch { }
+            try { Listas.Estoque(); } catch { }
             try { Sistema.Atalhos(true); } catch { }
             AbrirCatalogo();
         }
@@ -802,6 +864,14 @@ namespace FtcCad
                     if (m.Success) arq = Uri.UnescapeDataString(m.Groups[1].Value);
                     if (acao == "baixar") { if (arq != null) Baixar.Rodar(arq); }
                     else if (acao == "remover") { if (arq != null) Remover.Rodar(arq); }
+                    else if (acao == "estoque")
+                    {
+                        if (arq != null)
+                        {
+                            Match mt = Regex.Match(a, @"[?&]tem=(\d)"), mq = Regex.Match(a, @"[?&]qtd=(\d{1,6})");
+                            EstoqueEquipe.Definir(arq, mt.Success && mt.Groups[1].Value == "1", mq.Success ? int.Parse(mq.Groups[1].Value) : 0);
+                        }
+                    }
                     else Adicionar.Rodar();
                     return 0;
                 }

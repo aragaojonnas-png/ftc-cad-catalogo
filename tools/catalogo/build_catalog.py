@@ -65,7 +65,7 @@ for e in _estemos:
 rows += json.load(open("andymark_rows.json", encoding="utf-8"))   # fotos da AndyMark (Stealth e Sushi), guardadas em dados/
 from tipos import tipo, tipo_stemos
 for r in rows: r["g"] = tipo_stemos(r["p"], r["n"]) if r.pop("_e", 0) else tipo(r["p"], r["n"])
-# ---- pecas com o mesmo titulo: "v" e o nome diferenciado, mostrado como titulo do cartao (REV: nome da variante; goBILDA: titulo + serie) ----
+# ---- pecas com o mesmo titulo: "dn" e o nome diferenciado, mostrado como titulo do cartao (REV: nome da variante; goBILDA: titulo + serie) ----
 _rev = json.load(open("rev_variantes.json", encoding="utf-8"))   # gerado por buscar_variantes_rev.py
 def _cod_tit(n):
     m = re.match(r"^(.+?) - (.+)$", n)
@@ -78,11 +78,11 @@ for g in _grupos.values():
     if len(g) < 2: continue
     for r in g:
         cod = _cod_tit(r["n"])[0]
-        if r["m"] == "REV" and _rev.get(cod): r["v"] = _rev[cod]
-        elif r["m"] == "goBILDA" and re.match(r"\d{4}-", cod): r["v"] = "%s (Série %s)" % (_cod_tit(r["n"])[1], cod[:4])
-    vs = [r.get("v") for r in g]
+        if r["m"] == "REV" and _rev.get(cod): r["dn"] = _rev[cod]
+        elif r["m"] == "goBILDA" and re.match(r"\d{4}-", cod): r["dn"] = "%s (Série %s)" % (_cod_tit(r["n"])[1], cod[:4])
+    vs = [r.get("dn") for r in g]
     if len(set(vs)) < len(vs):                      # nao diferenciou: melhor nao mostrar nada
-        for r in g: r.pop("v", None)
+        for r in g: r.pop("dn", None)
 rows.sort(key=lambda r: (r["p"].lower(), r["n"].lower()))
 cats = sorted({"/".join(r["p"].split("/")[:2]) for r in rows})
 print("removidas (kits/robos):", excl)
@@ -131,7 +131,7 @@ main{padding:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200
 .code{font:600 12px/1.3 ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--acc);word-break:break-all}
 .name{font-size:13.5px;font-weight:500;line-height:1.35;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;min-height:3.9em}
 .path{color:var(--mute);font-size:12px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.meta{display:flex;gap:6px;align-items:center;margin-top:auto;padding-top:8px;color:var(--mute);font-size:12px}
+.meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:auto;padding-top:8px;color:var(--mute);font-size:12px}
 .meta .sz{margin-left:auto}
 #add{background:var(--btn);color:#fff;text-decoration:none;border-radius:8px;padding:6px 12px;font-size:13px;font-weight:600;white-space:nowrap}
 #add:hover{filter:brightness(1.15)}
@@ -141,6 +141,9 @@ main{padding:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200
 .dl.no{color:#d6c2ff;border:1px solid #5b3fa0}
 .rm{margin-left:4px;font-size:11.5px;color:#ff9db0;text-decoration:none;border:1px solid #5a2a3a;border-radius:6px;padding:1px 8px}
 .rm:hover{background:#4a1f2e;color:#ffc2cf}
+.es{margin-left:4px;font:inherit;font-size:11.5px;border-radius:6px;padding:1px 8px;cursor:pointer;background:transparent;color:var(--mute);border:1px dashed #5b4a8f}
+.es:hover{border-color:var(--acc);color:var(--ink)}
+.es.on{background:var(--shopbg);color:var(--shop);border:1px solid #2c5a42}
 .tag.eq{background:#2a1f4d;color:#d6c2ff}
 .tag.shop{background:var(--shopbg);color:var(--shop)}
 #more{display:block;margin:4px auto 28px;padding:9px 20px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;font:inherit}
@@ -165,6 +168,7 @@ main{padding:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200
     <select id="sz" aria-label="Tamanho do arquivo"><option value="0">qualquer tamanho</option><option value="5">até 5 MB</option><option value="20">até 20 MB</option></select>
     <label><input id="frc" type="checkbox"> mostrar FRC</label>
     <label id="dlbox" hidden><input id="onlydl" type="checkbox"> só as que já estão no PC</label>
+    <label id="estbox" hidden><input id="onlyest" type="checkbox"> só as disponíveis na equipe</label>
   </div>
   <div id="tabs" role="tablist" aria-label="Tipo de peça"></div>
 </header>
@@ -173,6 +177,7 @@ main{padding:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200
 <div id="toast"></div>
 <script src="extras.js"></script>
 <script src="baixadas.js"></script>
+<script src="estoque.js"></script>
 <script id="data" type="application/json">__DATA__</script>
 <script>
 const D = JSON.parse(document.getElementById('data').textContent);
@@ -189,7 +194,7 @@ function mergeExtras(){
     if (!D.tipos.includes(e.g)) D.tipos.splice(Math.max(0, D.tipos.length - 1), 0, e.g);
     const c = e.p.split('/').slice(0, 2).join('/'); if (!D.cats.includes(c)) D.cats.push(c); });
   D.mfrs.sort(); D.cats.sort();
-  D.rows.forEach(r => { if (!r.k) r.k = norm(r.n + ' ' + r.p + ' ' + r.t + ' ' + r.g + ' ' + (r.v || '')); });
+  D.rows.forEach(r => { if (!r.k) r.k = norm(r.n + ' ' + r.p + ' ' + r.t + ' ' + r.g + ' ' + (r.dn || '')); });
   const m0 = $('mfr').value, c0 = $('cat').value;
   $('mfr').innerHTML = '<option value="">todos os fabricantes e lojas</option>' + D.mfrs.concat(['stemOS']).concat(ex.length ? ['__eq'] : []).map(c => `<option value="${c}">${c === '__eq' ? 'adicionadas pela equipe' : c}</option>`).join('');
   $('cat').innerHTML = '<option value="">todas as categorias</option>' + D.cats.map(c => `<option>${c}</option>`).join('');
@@ -200,6 +205,12 @@ const DL = new Set();
 const dlMode = () => Array.isArray(window.BAIXADAS);
 const keyOf = r => (r.p + '/' + r.n).toLowerCase().replace(/\.(step|stp)$/, '');
 const isDL = r => r.x || !dlMode() || DL.has(keyOf(r));
+// estoque da equipe (estoque.js gerado pelo app a partir do estoque.json da pasta compartilhada): chave -> quantidade (0 = sem quantidade)
+const EST = new Map();
+const estMode = () => !!window.ESTOQUE && typeof window.ESTOQUE === 'object';
+let ESTJ = '';
+function loadEst(){ EST.clear(); const o = window.ESTOQUE || {}; Object.keys(o).forEach(k => EST.set(k, (o[k] && o[k].q) || 0)); ESTJ = JSON.stringify(window.ESTOQUE || null);
+  const lb = $('estbox'); if (lb) lb.hidden = !estMode(); }
 let DLJ = '';
 function loadDL(){ DL.clear(); (window.BAIXADAS || []).forEach(x => DL.add(String(x).toLowerCase())); DLJ = JSON.stringify(window.BAIXADAS || null);
   const lb = $('dlbox'); if (lb) lb.hidden = !dlMode(); }
@@ -209,10 +220,11 @@ function loadScript(src){ return new Promise(ok => { const sc = document.createE
   sc.onload = () => { sc.remove(); ok(); }; sc.onerror = () => { sc.remove(); ok(); }; document.head.appendChild(sc); }); }
 window.addEventListener('focus', async () => {
   if (Date.now() - _ex < 1500) return; _ex = Date.now();
-  await Promise.all([loadScript('extras.js'), loadScript('baixadas.js')]);
+  await Promise.all([loadScript('extras.js'), loadScript('baixadas.js'), loadScript('estoque.js')]);
   let mudou = false;
   if (JSON.stringify(window.EXTRAS || []) !== EXJ) { mergeExtras(); mudou = true; }
   if (JSON.stringify(window.BAIXADAS || null) !== DLJ) { loadDL(); mudou = true; }
+  if (JSON.stringify(window.ESTOQUE || null) !== ESTJ) { loadEst(); mudou = true; }
   if (mudou) filter();
 });
 const PAGE = 200; let shown = PAGE, list = [];
@@ -229,19 +241,37 @@ $('tabs').addEventListener('click', ev => { const t = ev.target.closest('.tab');
 function esc(s){return s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function filter(){
   const terms = norm($('q').value).split(/\\s+/).filter(Boolean), cat = $('cat').value, mfr = $('mfr').value, tp = TIPO, frc = $('frc').checked, sz = +$('sz').value;
-  list = D.rows.filter(r => (frc || !r.f) && mfrOk(r, mfr) && (!tp || r.g === tp) && (!cat || r.p.startsWith(cat)) && (!sz || r.s <= sz) && (!$('onlydl').checked || isDL(r)) && terms.every(t => r.k.includes(t)));
+  list = D.rows.filter(r => (frc || !r.f) && mfrOk(r, mfr) && (!tp || r.g === tp) && (!cat || r.p.startsWith(cat)) && (!sz || r.s <= sz) && (!$('onlydl').checked || isDL(r)) && (!$('onlyest').checked || EST.has(keyOf(r))) && terms.every(t => r.k.includes(t)));
   shown = PAGE; buildTabs(); draw();
 }
 function split(n){ const m = n.match(/^(.+?) - (.+)$/); let code = m ? m[1] : '', t = m ? m[2] : n;
   t = t.replace(/ \[([^\]]+)\]$/, (s, x) => x === code ? '' : s); return [code, t]; }
+function estChip(r){ const k = keyOf(r), has = EST.has(k), q = EST.get(k);
+  return '<button type="button" class="es' + (has ? ' on' : '') + '" title="' + (has ? 'A equipe tem esta peça. Clique para mudar a quantidade ou tirar.' : 'Marcar como disponível na equipe') + '">'
+    + (has ? '✓ disponível' + (q ? ' · ' + q : '') : '+ tenho') + '</button>'; }
+// marcar/desmarcar como disponivel (quantidade opcional); mostra na hora e o app grava no estoque.json da pasta da equipe
+function setEst(c){
+  if (!c) return;
+  const r = list[+c.dataset.i], k = keyOf(r), has = EST.has(k), q = EST.get(k) || 0;
+  const t = window.prompt(has ? 'Quantas a equipe tem? Deixe vazio para só marcar como disponível. Digite 0 para tirar da lista de disponíveis.'
+                              : 'Marcar como disponível na equipe. Quantas a equipe tem? (pode deixar vazio)', has && q ? String(q) : '');
+  if (t === null) return;
+  const s = t.trim(), n = parseInt(s, 10);
+  if (s !== '' && (!/^[0-9]+$/.test(s) || n > 999999)) { toast('Digite só números.'); return; }
+  const tem = !(s !== '' && n === 0), qtd = tem && s !== '' ? n : 0;
+  if (tem) EST.set(k, qtd); else EST.delete(k);
+  if ($('onlyest').checked) filter(); else draw();
+  toast(tem ? 'Marcada como disponível' + (qtd ? ' (' + qtd + ')' : '') + '. Salvando para a equipe...' : 'Tirada da lista de disponíveis. Salvando...');
+  location.href = 'ftccad://estoque?arquivo=' + encodeURIComponent(k) + '&tem=' + (tem ? 1 : 0) + '&qtd=' + qtd;
+}
 function draw(){
   const part = list.slice(0, shown);
   $('grid').innerHTML = part.length ? part.map((r, i) => { const [code, title] = split(r.n), last = r.p.split('/').pop();
     return `<div class="card" data-i="${i}" tabindex="0" role="button" title="Clique para copiar o caminho do arquivo">
       <div class="ph ${r.i ? '' : 'none'}">${r.i ? `<img loading="lazy" referrerpolicy="no-referrer" src="${esc(r.i)}" alt="">` : 'sem foto'}</div>
-      <div class="b">${code ? `<div class="code">${esc(code)}</div>` : ''}<div class="name">${esc(r.v || title)}</div>
+      <div class="b">${code ? `<div class="code">${esc(code)}</div>` : ''}<div class="name">${esc(r.dn || title)}</div>
       <div class="path">${esc(r.m)} · ${esc(r.g === last ? r.p.split('/').slice(-2).join(' / ') : last)}</div>
-      <div class="meta">${r.l ? '<span class="tag shop">stemOS</span>' : ''}${r.x ? '<span class="tag eq" title="Adicionada por ' + esc(r.b || 'alguém da equipe') + '">' + esc(r.gr || 'Equipe') + '</span>' : ''}${r.f ? '<span class="tag">FRC</span>' : ''}${dlMode() && !r.x ? (isDL(r) ? '<span class="dl ok" title="Este arquivo já está na sua pasta">no PC</span>' : '<span class="dl no" title="Clique no cartão para baixar só esta peça">baixar</span>') : ''}${r.x ? '<a class="rm" href="ftccad://remover?arquivo=' + encodeURIComponent(r.a) + '" title="Remover esta peça da pasta da equipe">remover</a>' : ''}<span class="sz">${r.s ? r.s + ' MB' : ''}</span></div></div>
+      <div class="meta">${r.l ? '<span class="tag shop">stemOS</span>' : ''}${r.x ? '<span class="tag eq" title="Adicionada por ' + esc(r.b || 'alguém da equipe') + '">' + esc(r.gr || 'Equipe') + '</span>' : ''}${r.f ? '<span class="tag">FRC</span>' : ''}${dlMode() && !r.x ? (isDL(r) ? '<span class="dl ok" title="Este arquivo já está na sua pasta">no PC</span>' : '<span class="dl no" title="Clique no cartão para baixar só esta peça">baixar</span>') : ''}${r.x ? '<a class="rm" href="ftccad://remover?arquivo=' + encodeURIComponent(r.a) + '" title="Remover esta peça da pasta da equipe">remover</a>' : ''}${estMode() ? estChip(r) : ''}<span class="sz">${r.s ? r.s + ' MB' : ''}</span></div></div>
     </div>`; }).join('') : '<div class="empty">Nenhuma peça encontrada. Tente outra palavra ou limpe os filtros.</div>';
   $('count').textContent = list.length.toLocaleString('pt-BR') + ' peças';
   $('more').hidden = shown >= list.length;
@@ -264,12 +294,13 @@ function copyCard(c){
   const path = r.a ? r.a : baseDir() + r.p.replace(/\//g, '\\\\') + '\\\\' + r.n + '.step';
   copyText(path).then(() => toast('Caminho copiado: ' + path), () => { window.prompt('Copie o caminho (Ctrl+C):', path); });
 }
-$('grid').addEventListener('click', ev => { if (ev.target.closest('.rm')) return; copyCard(ev.target.closest('.card')); });
-$('grid').addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); copyCard(ev.target.closest('.card')); } });
+$('grid').addEventListener('click', ev => { if (ev.target.closest('.rm')) return; const es = ev.target.closest('.es'); if (es) { setEst(es.closest('.card')); return; } copyCard(ev.target.closest('.card')); });
+$('grid').addEventListener('keydown', ev => { if (ev.target.closest('.es, .rm')) return; if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); copyCard(ev.target.closest('.card')); } });
 function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');setTimeout(()=>e.classList.remove('on'),3500)}
 $('more').onclick = () => { shown += PAGE; draw(); };
-['q','mfr','cat','frc','sz','onlydl'].forEach(id => $(id).addEventListener(id === 'q' ? 'input' : 'change', filter));
+['q','mfr','cat','frc','sz','onlydl','onlyest'].forEach(id => $(id).addEventListener(id === 'q' ? 'input' : 'change', filter));
 loadDL();
+loadEst();
 mergeExtras();
 filter();
 </script>
