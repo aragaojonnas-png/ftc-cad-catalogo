@@ -139,12 +139,14 @@ namespace FtcCad
             return null;
         }
         public static string Destino(Item it) { return Path.Combine(Program.Root, it.D.Replace('/', '\\')); }
-        public static bool Tudo_Pular(Item it) { return it.D.StartsWith("REV/ION") || it.D.Contains("Robotics Competition"); }
+        public static bool Tudo_Pular(Item it) { return it.D.StartsWith("REV/ION") || it.D.Contains("Robotics Competition") || it.D.Contains(" (FRC)/"); }
     }
 
     // ------------------------------------------------------------------ download e extracao
     static class Rede
     {
+        // user-agent completo: o site da WCP recusa (406) quem se apresenta so como "Mozilla/5.0"
+        public const string Agente = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36";
         public static void Preparar()
         {
             try { ServicePointManager.SecurityProtocol = (SecurityProtocolType)3072; } catch { }
@@ -154,7 +156,7 @@ namespace FtcCad
         public static bool Baixar(string url, string tmp, Func<long, long, bool> aoProgresso)
         {
             HttpWebRequest rq = (HttpWebRequest)WebRequest.Create(url);
-            rq.UserAgent = "Mozilla/5.0"; rq.Timeout = 30000; rq.ReadWriteTimeout = 30000;
+            rq.UserAgent = Rede.Agente; rq.Timeout = 30000; rq.ReadWriteTimeout = 30000;
             using (WebResponse rs = rq.GetResponse())
             using (Stream ent = rs.GetResponseStream())
             using (FileStream sai = File.Create(tmp))
@@ -171,7 +173,7 @@ namespace FtcCad
         public static string Texto(string nome, int timeoutMs)
         {
             HttpWebRequest rq = (HttpWebRequest)WebRequest.Create(Program.Base + nome + "?t=" + Guid.NewGuid().ToString("N"));
-            rq.UserAgent = "Mozilla/5.0"; rq.Timeout = timeoutMs; rq.ReadWriteTimeout = timeoutMs;
+            rq.UserAgent = Rede.Agente; rq.Timeout = timeoutMs; rq.ReadWriteTimeout = timeoutMs;
             using (WebResponse rs = rq.GetResponse())
             using (StreamReader sr = new StreamReader(rs.GetResponseStream(), Encoding.UTF8)) return sr.ReadToEnd();
         }

@@ -40,3 +40,29 @@ def tipo(path, name):
     for rx, t in KW:
         if re.search(rx, s): return t
     return "Outros"
+
+# ---- pecas vindas da stemOS: categorias em portugues ----
+CAT_PT = {
+ "Rodas":"Rodas e pneus","Hubs":"Cubos","Eixos":"Eixos e tubos","Rolamentos":"Rolamentos","Extrusões":"Vigas e perfis","Extrusões e Chapas":"Vigas e perfis",
+ "Fixação":"Parafusos","Espaçadores":"Espaçadores e arruelas","Gussets e Brackets":"Suportes e bases","Motores":"Motores e caixas de redução",
+ "Motores e Servos":"Motores e caixas de redução","Caixas de Redução":"Motores e caixas de redução","Sensores":"Eletrônica","Sistema de Controle":"Eletrônica",
+ "Energia":"Eletrônica","Cabos":"Eletrônica","Cabos e Terminais":"Eletrônica","Elétrica e Eletrônica":"Eletrônica","Acessórios para Servos":"Servos",
+ "Movimentação Linear":"Guias, slides e articulações","Ferramentas":"Ferramentas","Sistemas Swerve":"Módulos swerve",
+ "Pneumática":"Pneumática","Atuadores Pneumáticos":"Pneumática","Válvulas, Reguladores e medidores":"Pneumática",
+ "Conectores e Mangueiras":"Pneumática","Compressores e Acumuladores":"Pneumática","Arenas e Elementos do Jogo":"Outros",
+}
+KW_PT = [  # nomes em portugues (categoria "Transmissao" e outras amplas)
+ (r"engrenagem|pinh[aã]o|gear|pinion","Engrenagens"),(r"coroa|corrente|sprocket|chain","Correntes e coroas"),
+ (r"correia|polia|belt|pulley","Correias e polias"),(r"colar|acoplador|coupler|collar","Colares e acopladores"),
+ (r"rolamento|bearing","Rolamentos"),(r"eixo|shaft|axle","Eixos e tubos"),(r"roda|wheel|pneu|tire","Rodas e pneus"),
+ (r"cubo|hub","Cubos"),(r"parafuso|screw|bolt","Parafusos"),(r"porca|nut\b","Porcas"),
+ (r"espa[cç]ador|arruela|spacer|washer","Espaçadores e arruelas"),(r"caixa de redu|gearbox|planet","Motores e caixas de redução"),
+]
+def tipo_stemos(path, name):
+    parts = path.split("/")
+    cat = re.sub(r" \(FRC\)$", "", parts[1]) if len(parts) > 1 else ""
+    if cat in CAT_PT: return CAT_PT[cat]
+    s = name.lower()
+    for rx, t in KW_PT:
+        if re.search(rx, s): return t
+    return tipo(path, name)

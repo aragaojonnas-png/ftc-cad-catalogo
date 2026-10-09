@@ -21,7 +21,12 @@ Por isso, **a raiz do repositorio precisa manter `FTC_CAD.exe`, `catalogo.html`,
 
 ## Pastas
 - `src/` codigo-fonte do app e icone.
-- `tools/catalogo/` gerador do `catalogo.html` (`build_catalog.py` + `dados/`). Ele ainda depende de arquivos locais (fotos da AndyMark em /mnt/user-data/... e da biblioteca STEP no PC), entao serve de referencia: pode precisar de ajuste de caminhos para rodar fora da sessao original.
+- `tools/catalogo/` gerador do `catalogo.html` **e do `manifesto.json`** (`python3 build_catalog.py`; roda fora da sessao original, usa so `dados/`). Dados:
+  - `manifesto_full.json` (goBILDA/REV raspados), `andymark_manifesto.json` + `andymark_rows.json` (AndyMark Stealth/Sushi), `stemos.json.gz` (catalogo da loja stemOS).
+  - `rev_variantes.json`: nome de cada codigo REV (gerado por `buscar_variantes_rev.py`, precisa de internet). Usado para o campo `v`, que diferencia cartoes de mesmo titulo (REV: variante; goBILDA: serie).
+  - `stemos_extras.json`: pecas que a stemOS vende com STEP e que nao estavam no manifesto (WCP, AndyMark, CTR, Axon, SDS...), sem kits (gerado por `adicionar_stemos.py`, precisa de internet; confere cada link baixando). Pecas FRC vao em pastas `... (FRC)` e o app nao as baixa sozinho no modo "tudo".
+  - Para atualizar a stemOS: trocar `stemos.json.gz`, rodar `adicionar_stemos.py` e depois `build_catalog.py`.
 
 ## Limites conhecidos
+O site da WCP responde 406 se o User-Agent for so "Mozilla/5.0": o app usa um User-Agent de navegador completo (`Rede.Agente`). Alguns links da stemOS ficam de fora por estarem fora do ar ou bloqueados (ver saida de `adicionar_stemos.py`).
 Janelas, atalhos, registro do `ftccad://`, download real e troca do .exe foram testados so parcialmente (logica com Mono e janelas em Xvfb; nao no Windows). O exe nao e assinado (SmartScreen avisa). Navegador pede permissao na 1a vez que abre `ftccad://`.

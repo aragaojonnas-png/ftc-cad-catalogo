@@ -32,11 +32,13 @@ def _loja(e, name):
     if not x: return {}
     return {"l": 1}
 rows = []
+man_ok = []        # entradas do manifesto que viram pecas do catalogo (vai para ../../../manifesto.json)
 excl = 0
 for e in man:
     if EXCL.search(e["d"]):
         excl += 1
         continue
+    man_ok.append(e)
     pg = by_link.get(e["u"])
     d = e["d"]
     folder, fname = d.rsplit("/", 1)
@@ -53,9 +55,16 @@ for e in man:
         "m": d.split("/")[0],
         **_loja(e, fname),
     })
+man_ok += json.load(open("andymark_manifesto.json", encoding="utf-8"))
+_estemos = json.load(open("stemos_extras.json", encoding="utf-8"))       # gerado por adicionar_stemos.py
+for e in _estemos:
+    folder, fname = e["d"].rsplit("/", 1)
+    man_ok.append({"u": e["u"], "c": e["c"], "d": e["d"], "s": e["s"]})
+    rows.append({"n": fname[:-5], "p": folder, "s": round(e["s"] / 1048576, 1) or 0.1, "i": e["i"], "t": e["t"] + " " + " ".join(e["tags"]),
+                 "u": e["w"], "f": e["f"], "m": e["m"], "l": 1, "_e": 1})
 rows += json.load(open("andymark_rows.json", encoding="utf-8"))   # fotos da AndyMark (Stealth e Sushi), guardadas em dados/
-from tipos import tipo
-for r in rows: r["g"] = tipo(r["p"], r["n"])
+from tipos import tipo, tipo_stemos
+for r in rows: r["g"] = tipo_stemos(r["p"], r["n"]) if r.pop("_e", 0) else tipo(r["p"], r["n"])
 # ---- pecas com o mesmo titulo: guarda em "v" o que diferencia (nome da variante na REV; serie na goBILDA) ----
 _rev = json.load(open("rev_variantes.json", encoding="utf-8"))   # gerado por buscar_variantes_rev.py
 def _cod_tit(n):
@@ -268,6 +277,7 @@ filter();
 </body>
 </html>
 """
+open(os.path.abspath("../../../manifesto.json"), "w", encoding="utf-8").write(json.dumps(man_ok, ensure_ascii=False, separators=(",", ":")))
 OUT = os.path.abspath("../../../catalogo.html")
 open(OUT, "w", encoding="utf-8").write(page.replace("__DATA__", data))
 print("catalogo.html: %.2f MB" % (os.path.getsize(OUT) / 1e6))
