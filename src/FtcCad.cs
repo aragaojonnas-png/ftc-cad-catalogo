@@ -536,17 +536,41 @@ namespace FtcCad
                 if (qtd > 0) e["q"] = qtd;
                 d[chave] = e;
             }
+            Gravar(pasta, d);
+            Listas.Estoque();
+        }
+
+        static void Gravar(string pasta, Dictionary<string, object> d)
+        {
             string alvo = Arq(pasta), tmp = alvo + ".tmp";
             File.WriteAllText(tmp, Json.S().Serialize(d), new UTF8Encoding(false));
             if (File.Exists(alvo)) File.Replace(tmp, alvo, alvo + ".bak"); else File.Move(tmp, alvo);
-            Listas.Estoque();
+        }
+
+        // chave de uma peca da equipe no estoque: igual a do catalogo (pasta/nome do cartao, minusculas, sem .step)
+        public static string Chave(string tipo, string nome, string codigo, string step)
+        {
+            if (tipo == "") tipo = "Outros";
+            string n = nome; if (n == "") n = Path.GetFileNameWithoutExtension(step);
+            if (codigo != "") n = codigo + " - " + n;
+            return Regex.Replace(("Equipe/" + tipo + "/" + n).ToLowerInvariant(), @"\.(step|stp)$", "");
+        }
+
+        // leva a marcacao de estoque de uma peca para a chave nova (quando ela e renomeada ou muda de tipo)
+        public static void Mover(string pasta, string de, string para)
+        {
+            if (de == para) return;
+            Dictionary<string, object> d = Ler(pasta);
+            object v; if (!d.TryGetValue(de, out v)) return;
+            d.Remove(de); d[para] = v;
+            Gravar(pasta, d);
         }
     }
 
     // ------------------------------------------------------------------ adicionar peca da equipe
     static class Adicionar
     {
-        static readonly string[] Tipos = new string[] {
+        public static readonly string[] Tipos = new string[] {
             "Colares e acopladores", "Correias e polias", "Correntes e coroas", "Cubos", "Dobradiças e molas", "Eixos e tubos", "Eletrônica", "Engrenagens",
             "Espaçadores e arruelas", "Esteiras", "Ferramentas", "Guias, slides e articulações", "Motores e caixas de redução", "Parafusos", "Placas e painéis", "Porcas",
             "Rodas e pneus", "Rolamentos", "Servos", "Suportes e bases", "Vigas e perfis", "Outros" };
@@ -639,6 +663,140 @@ namespace FtcCad
                 if (puladas.Count > 0) msg += "\r\n\r\nNão substituídas: " + string.Join(", ", puladas.ToArray());
                 Tema.Msg(msg, titulo, MessageBoxButtons.OK, MessageBoxIcon.Information);
                 f.Close();
+            };
+            f.ShowDialog();
+        }
+    }
+
+    // ------------------------------------------------------------------ editar peca da equipe
+    static class Editar
+    {
+        // aplica a edicao: atualiza o .json, move .step e .json se o tipo mudou, troca/tira a foto e leva a marcacao de estoque junto.
+        // devolve o caminho do .step depois da edicao; lanca excecao com mensagem clara se nao der.
+        public static string Aplicar(string pasta, string step, string nome, string codigo, string fab, string grupo, string tipo, string link, string fotoNova, bool tirarFoto, out string aviso)
+        {
+            aviso = "";
+            string baseDir = Path.GetFullPath(Path.Combine(pasta, "Pecas")).TrimEnd('\\', '/');
+            string json = step + ".json";
+            Dictionary<string, object> m = Json.LerObj(json);
+            string tipoAntigo = Json.Str(m, "tipo"); if (tipoAntigo == "") tipoAntigo = "Outros";
+            string chaveAntiga = EstoqueEquipe.Chave(tipoAntigo, Json.Str(m, "nome"), Json.Str(m, "codigo"), step);
+            if (tipo == "") tipo = "Outros";
+
+            string novoStep = step, novoJson = json;
+            if (!string.Equals(tipo, tipoAntigo, StringComparison.Ordinal))
+            {
+                string dirNovo = Path.Combine(baseDir, tipo);
+                novoStep = Path.Combine(dirNovo, Path.GetFileName(step)); novoJson = novoStep + ".json";
+                if (File.Exists(novoStep) || File.Exists(novoJson))
+                    throw new Exception("Já existe um arquivo '" + Path.GetFileName(step) + "' na pasta do tipo '" + tipo + "'. Nada foi alterado.");
+                Directory.CreateDirectory(dirNovo);
+            }
+
+            string foto = Json.Str(m, "foto");
+            string velha = foto != "" ? Path.Combine(baseDir, foto) : "";
+            if (fotoNova != null && fotoNova != "")
+            {
+                string dirFotos = Path.Combine(baseDir, "_fotos"); Directory.CreateDirectory(dirFotos);
+                string fn = Path.GetFileNameWithoutExtension(novoStep) + Path.GetExtension(fotoNova);
+                string destFoto = Path.Combine(dirFotos, fn);
+                bool mesma = string.Equals(Path.GetFullPath(fotoNova), Path.GetFullPath(destFoto), StringComparison.OrdinalIgnoreCase);
+                if (!mesma) File.Copy(fotoNova, destFoto, true);
+                if (velha != "" && File.Exists(velha) && !string.Equals(Path.GetFullPath(velha), Path.GetFullPath(destFoto), StringComparison.OrdinalIgnoreCase)) Sistema.ParaLixeira(velha);
+                foto = "_fotos\\" + fn;
+            }
+            else if (tirarFoto)
+            {
+                if (velha != "" && File.Exists(velha)) Sistema.ParaLixeira(velha);
+                foto = "";
+            }
+
+            m["nome"] = nome; m["codigo"] = codigo; m["fab"] = fab; m["grupo"] = grupo; m["tipo"] = tipo; m["link"] = link; m["foto"] = foto;
+            File.WriteAllText(json, Json.S().Serialize(m), new UTF8Encoding(true));
+            if (novoStep != step)
+            {
+                try { File.Move(step, novoStep); File.Move(json, novoJson); }
+                catch { if (File.Exists(novoStep) && !File.Exists(step)) File.Move(novoStep, step); throw; }
+            }
+
+            string chaveNova = EstoqueEquipe.Chave(tipo, nome, codigo, novoStep);
+            if (chaveNova != chaveAntiga)
+                try { EstoqueEquipe.Mover(pasta, chaveAntiga, chaveNova); }
+                catch { aviso = "A marcação de estoque desta peça não pôde ser levada para o novo nome (estoque.json ilegível agora). Marque de novo se precisar."; }
+            return novoStep;
+        }
+
+        public static void Rodar(string arquivo)
+        {
+            string titulo = "Editar peça - FTC_CAD";
+            string pasta = Cfg.PastaEquipe();
+            if (pasta == null) { Tema.Msg("A pasta da equipe não está configurada.", titulo, MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
+            string baseDir = Path.GetFullPath(Path.Combine(pasta, "Pecas")).TrimEnd('\\', '/');
+            string full = Path.GetFullPath(arquivo);
+            if (!full.StartsWith(baseDir + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)) { Tema.Msg("Esse arquivo não está na pasta da equipe.", titulo, MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
+            if (!full.EndsWith(".step", StringComparison.OrdinalIgnoreCase) || !File.Exists(full)) { Tema.Msg("Não achei esse arquivo .step na pasta da equipe.", titulo, MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
+            string json = full + ".json";
+            if (!File.Exists(json)) { Tema.Msg("Esse arquivo não é uma peça adicionada pela equipe (não tem o .json).", titulo, MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
+            Dictionary<string, object> m = Json.LerObj(json);
+            string foto = Json.Str(m, "foto");
+
+            Form f = Tema.Janela(titulo, 560, 500);
+            Label la = Tema.Rotulo(f, "Arquivo: " + Path.GetFileName(full), 20, 12, 520, 20); la.ForeColor = Tema.Suave;
+            Tema.Rotulo(f, "Nome da peça", 20, 40, 520, 20);
+            TextBox txtNome = Tema.Caixa(f, 20, 62, 520);
+            Tema.Rotulo(f, "Código (opcional, ex.: 2101-0006-0001)", 20, 100, 520, 20);
+            TextBox txtCod = Tema.Caixa(f, 20, 122, 520);
+            Tema.Rotulo(f, "Fabricante", 20, 160, 250, 20);
+            ComboBox cmbFab = Tema.Combo(f, 20, 182, 250, true); cmbFab.Items.AddRange(new object[] { "goBILDA", "REV", "AndyMark", "Outro" });
+            Tema.Rotulo(f, "Tipo de peça", 290, 160, 250, 20);
+            ComboBox cmbTipo = Tema.Combo(f, 290, 182, 250, false); cmbTipo.Items.AddRange(Adicionar.Tipos);
+            Tema.Rotulo(f, "Grupo (opcional): aparece junto dos fabricantes e como etiqueta", 20, 220, 520, 20);
+            ComboBox cmbGrupo = Tema.Combo(f, 20, 242, 520, true);
+            try { foreach (string g in Listas.Grupos(pasta)) cmbGrupo.Items.Add(g); } catch { }
+            Tema.Rotulo(f, "Link da página do produto (opcional)", 20, 280, 520, 20);
+            TextBox txtLink = Tema.Caixa(f, 20, 302, 520);
+            Tema.Rotulo(f, "Foto da peça (.jpg ou .png)", 20, 340, 520, 20);
+            TextBox txtFoto = Tema.Caixa(f, 20, 362, 290); txtFoto.ReadOnly = true;
+            Button btnFoto = Tema.Botao_(f, "Trocar...", 320, 361, 100, 28, false);
+            Button btnTirar = Tema.Botao_(f, "Tirar foto", 430, 361, 110, 28, true);
+            Label dica = Tema.Rotulo(f, "Se mudar o tipo, o arquivo vai para a pasta do novo tipo.", 20, 396, 520, 20); dica.ForeColor = Tema.Suave;
+            Label lp = Tema.Rotulo(f, "Pasta da equipe: " + pasta, 20, 418, 520, 20); lp.ForeColor = Tema.Suave;
+            Button ok = Tema.Botao_(f, "Salvar", 300, 458, 120, 30, false);
+            Button cancel = Tema.Botao_(f, "Cancelar", 430, 458, 110, 30, true);
+            cancel.Click += delegate { f.Close(); };
+
+            string nomeIni = Json.Str(m, "nome"); if (nomeIni == "") nomeIni = Path.GetFileNameWithoutExtension(full);
+            txtNome.Text = nomeIni; txtCod.Text = Json.Str(m, "codigo");
+            cmbFab.Text = Json.Str(m, "fab") != "" ? Json.Str(m, "fab") : "Outro";
+            string tipoIni = Json.Str(m, "tipo"); if (tipoIni == "") tipoIni = "Outros";
+            if (!cmbTipo.Items.Contains(tipoIni)) cmbTipo.Items.Add(tipoIni);
+            cmbTipo.SelectedItem = tipoIni;
+            cmbGrupo.Text = Json.Str(m, "grupo"); txtLink.Text = Json.Str(m, "link");
+            txtFoto.Text = foto != "" ? foto : "(sem foto)";
+            string fotoNova = null; bool tirarFoto = false;
+            btnFoto.Click += delegate
+            {
+                using (OpenFileDialog d = new OpenFileDialog())
+                {
+                    d.Filter = "Imagens (*.jpg;*.jpeg;*.png)|*.jpg;*.jpeg;*.png";
+                    if (d.ShowDialog() == DialogResult.OK) { fotoNova = d.FileName; tirarFoto = false; txtFoto.Text = d.FileName; }
+                }
+            };
+            btnTirar.Click += delegate { fotoNova = null; tirarFoto = true; txtFoto.Text = "(sem foto)"; };
+            ok.Click += delegate
+            {
+                if (txtNome.Text.Trim() == "") { Tema.Msg("Digite o nome da peça.", titulo, MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
+                try
+                {
+                    string aviso;
+                    Aplicar(pasta, full, txtNome.Text.Trim(), txtCod.Text.Trim(), cmbFab.Text.Trim(), cmbGrupo.Text.Trim(), Convert.ToString(cmbTipo.SelectedItem), txtLink.Text.Trim(), fotoNova, tirarFoto, out aviso);
+                    Listas.Extras(); try { Listas.Estoque(); } catch { }
+                    string msg = "Peça atualizada. O catálogo se atualiza sozinho ao voltar para ele (ou aperte F5). O Google Drive envia para a equipe em alguns instantes.";
+                    if (aviso != "") msg += "\r\n\r\n" + aviso;
+                    Tema.Msg(msg, titulo, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    f.Close();
+                }
+                catch (Exception ex) { Tema.Msg("Não consegui salvar: " + ex.Message, titulo, MessageBoxButtons.OK, MessageBoxIcon.Warning); }
             };
             f.ShowDialog();
         }
@@ -864,6 +1022,7 @@ namespace FtcCad
                     if (m.Success) arq = Uri.UnescapeDataString(m.Groups[1].Value);
                     if (acao == "baixar") { if (arq != null) Baixar.Rodar(arq); }
                     else if (acao == "remover") { if (arq != null) Remover.Rodar(arq); }
+                    else if (acao == "editar") { if (arq != null) Editar.Rodar(arq); }
                     else if (acao == "estoque")
                     {
                         if (arq != null)

@@ -141,6 +141,8 @@ main{padding:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200
 .dl.no{color:#d6c2ff;border:1px solid #5b3fa0}
 .rm{margin-left:4px;font-size:11.5px;color:#ff9db0;text-decoration:none;border:1px solid #5a2a3a;border-radius:6px;padding:1px 8px}
 .rm:hover{background:#4a1f2e;color:#ffc2cf}
+.ed{margin-left:4px;font-size:11.5px;color:var(--acc);text-decoration:none;border:1px solid #4a3a80;border-radius:6px;padding:1px 8px}
+.ed:hover{background:var(--accbg);color:#fff}
 .es{margin-left:4px;font:inherit;font-size:11.5px;border-radius:6px;padding:1px 8px;cursor:pointer;background:transparent;color:var(--mute);border:1px dashed #5b4a8f}
 .es:hover{border-color:var(--acc);color:var(--ink)}
 .es.on{background:var(--shopbg);color:var(--shop);border:1px solid #2c5a42}
@@ -271,7 +273,7 @@ function draw(){
       <div class="ph ${r.i ? '' : 'none'}">${r.i ? `<img loading="lazy" referrerpolicy="no-referrer" src="${esc(r.i)}" alt="">` : 'sem foto'}</div>
       <div class="b">${code ? `<div class="code">${esc(code)}</div>` : ''}<div class="name">${esc(r.dn || title)}</div>
       <div class="path">${esc(r.m)} · ${esc(r.g === last ? r.p.split('/').slice(-2).join(' / ') : last)}</div>
-      <div class="meta">${r.l ? '<span class="tag shop">stemOS</span>' : ''}${r.x ? '<span class="tag eq" title="Adicionada por ' + esc(r.b || 'alguém da equipe') + '">' + esc(r.gr || 'Equipe') + '</span>' : ''}${r.f ? '<span class="tag">FRC</span>' : ''}${dlMode() && !r.x ? (isDL(r) ? '<span class="dl ok" title="Este arquivo já está na sua pasta">no PC</span>' : '<span class="dl no" title="Clique no cartão para baixar só esta peça">baixar</span>') : ''}${r.x ? '<a class="rm" href="ftccad://remover?arquivo=' + encodeURIComponent(r.a) + '" title="Remover esta peça da pasta da equipe">remover</a>' : ''}${estMode() ? estChip(r) : ''}<span class="sz">${r.s ? r.s + ' MB' : ''}</span></div></div>
+      <div class="meta">${r.l ? '<span class="tag shop">stemOS</span>' : ''}${r.x ? '<span class="tag eq" title="Adicionada por ' + esc(r.b || 'alguém da equipe') + '">' + esc(r.gr || 'Equipe') + '</span>' : ''}${r.f ? '<span class="tag">FRC</span>' : ''}${dlMode() && !r.x ? (isDL(r) ? '<span class="dl ok" title="Este arquivo já está na sua pasta">no PC</span>' : '<span class="dl no" title="Clique no cartão para baixar só esta peça">baixar</span>') : ''}${r.x ? '<a class="ed" href="ftccad://editar?arquivo=' + encodeURIComponent(r.a) + '" title="Editar nome, tipo, foto etc. desta peça da equipe">editar</a>' : ''}${r.x ? '<a class="rm" href="ftccad://remover?arquivo=' + encodeURIComponent(r.a) + '" title="Remover esta peça da pasta da equipe">remover</a>' : ''}${estMode() ? estChip(r) : ''}<span class="sz">${r.s ? r.s + ' MB' : ''}</span></div></div>
     </div>`; }).join('') : '<div class="empty">Nenhuma peça encontrada. Tente outra palavra ou limpe os filtros.</div>';
   $('count').textContent = list.length.toLocaleString('pt-BR') + ' peças';
   $('more').hidden = shown >= list.length;
@@ -294,8 +296,8 @@ function copyCard(c){
   const path = r.a ? r.a : baseDir() + r.p.replace(/\//g, '\\\\') + '\\\\' + r.n + '.step';
   copyText(path).then(() => toast('Caminho copiado: ' + path), () => { window.prompt('Copie o caminho (Ctrl+C):', path); });
 }
-$('grid').addEventListener('click', ev => { if (ev.target.closest('.rm')) return; const es = ev.target.closest('.es'); if (es) { setEst(es.closest('.card')); return; } copyCard(ev.target.closest('.card')); });
-$('grid').addEventListener('keydown', ev => { if (ev.target.closest('.es, .rm')) return; if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); copyCard(ev.target.closest('.card')); } });
+$('grid').addEventListener('click', ev => { if (ev.target.closest('.rm, .ed')) return; const es = ev.target.closest('.es'); if (es) { setEst(es.closest('.card')); return; } copyCard(ev.target.closest('.card')); });
+$('grid').addEventListener('keydown', ev => { if (ev.target.closest('.es, .rm, .ed')) return; if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); copyCard(ev.target.closest('.card')); } });
 function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');setTimeout(()=>e.classList.remove('on'),3500)}
 $('more').onclick = () => { shown += PAGE; draw(); };
 ['q','mfr','cat','frc','sz','onlydl','onlyest'].forEach(id => $(id).addEventListener(id === 'q' ? 'input' : 'change', filter));
