@@ -145,15 +145,29 @@ $worker = {
 
 # ---- janela (WinForms vem com o Windows, nada a instalar) ----
 $gui = -not $SemJanela
-$form = $null
-if ($gui) {
+# --- aparencia de app: janelas nitidas em telas com escala (DPI), identidade propria na barra de tarefas ---
+function Initialize-FtcUi {
     try {
         Add-Type -AssemblyName System.Windows.Forms
         Add-Type -AssemblyName System.Drawing
-        [System.Windows.Forms.Application]::EnableVisualStyles()
+        Add-Type -Namespace Ftc -Name Nat -MemberDefinition '[DllImport("user32.dll")] public static extern bool SetProcessDPIAware(); [DllImport("shell32.dll", CharSet=CharSet.Unicode)] public static extern int SetCurrentProcessExplicitAppUserModelID(string id);'
+        [void][Ftc.Nat]::SetProcessDPIAware()
+        [void][Ftc.Nat]::SetCurrentProcessExplicitAppUserModelID('FTC.CAD.Catalogo')
+    } catch {}
+    try { [System.Windows.Forms.Application]::EnableVisualStyles() } catch {}
+    try { [System.Windows.Forms.Application]::SetCompatibleTextRenderingDefault($false) } catch {}
+}
+function Set-FtcScale($form) {
+    try { $form.AutoScaleDimensions = New-Object Drawing.SizeF(96, 96); $form.AutoScaleMode = 'Dpi' } catch {}
+}
+$form = $null
+if ($gui) {
+    try {
+        Initialize-FtcUi
         $bg = [Drawing.Color]::FromArgb(19, 14, 34)
         $fg = [Drawing.Color]::FromArgb(236, 230, 250)
         $form = New-Object Windows.Forms.Form
+        Set-FtcScale $form
         $form.Text = 'Instalador FTC_CAD'
         $form.ClientSize = New-Object Drawing.Size(540, 230)
         $form.StartPosition = 'CenterScreen'

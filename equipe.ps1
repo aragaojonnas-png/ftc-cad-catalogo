@@ -9,6 +9,22 @@ $script:TiposFtc = @(
  ('Motores e caixas de redu' + [char]0xE7 + [char]0xE3 + 'o'), 'Parafusos', ('Placas e pain' + [char]0xE9 + 'is'), 'Porcas',
  'Rodas e pneus', 'Rolamentos', 'Servos', 'Suportes e bases', 'Vigas e perfis', 'Outros')
 
+# --- aparencia de app: janelas nitidas em telas com escala (DPI), identidade propria na barra de tarefas ---
+function Initialize-FtcUi {
+    try {
+        Add-Type -AssemblyName System.Windows.Forms
+        Add-Type -AssemblyName System.Drawing
+        Add-Type -Namespace Ftc -Name Nat -MemberDefinition '[DllImport("user32.dll")] public static extern bool SetProcessDPIAware(); [DllImport("shell32.dll", CharSet=CharSet.Unicode)] public static extern int SetCurrentProcessExplicitAppUserModelID(string id);'
+        [void][Ftc.Nat]::SetProcessDPIAware()
+        [void][Ftc.Nat]::SetCurrentProcessExplicitAppUserModelID('FTC.CAD.Catalogo')
+    } catch {}
+    try { [System.Windows.Forms.Application]::EnableVisualStyles() } catch {}
+    try { [System.Windows.Forms.Application]::SetCompatibleTextRenderingDefault($false) } catch {}
+}
+function Set-FtcScale($form) {
+    try { $form.AutoScaleDimensions = New-Object Drawing.SizeF(96, 96); $form.AutoScaleMode = 'Dpi' } catch {}
+}
+
 function Get-ConfigPath($root) { Join-Path $root 'config.json' }
 
 function Get-Cfg($root) {

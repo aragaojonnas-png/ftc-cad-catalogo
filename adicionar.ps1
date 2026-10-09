@@ -12,9 +12,7 @@ trap {
     exit 1
 }
 . (Join-Path $root 'equipe.ps1')
-Add-Type -AssemblyName System.Windows.Forms
-Add-Type -AssemblyName System.Drawing
-[System.Windows.Forms.Application]::EnableVisualStyles()
+Initialize-FtcUi
 
 # ---- modo "remover" (botao "remover" do catalogo: ftccad://remover?arquivo=...) ----
 $icoApp = Ensure-Icon $root
@@ -48,6 +46,7 @@ if ($Url -match '^ftccad://baixar') {
 
     $bg = [Drawing.Color]::FromArgb(19, 14, 34); $fg = [Drawing.Color]::FromArgb(236, 230, 250)
     $w = New-Object Windows.Forms.Form
+    Set-FtcScale $w
     $w.Text = 'Baixar peca - FTC_CAD'; $w.ClientSize = New-Object Drawing.Size(520, 160); $w.StartPosition = 'CenterScreen'
     $w.FormBorderStyle = 'FixedDialog'; $w.MaximizeBox = $false; $w.BackColor = $bg; $w.ForeColor = $fg
     $w.Font = New-Object Drawing.Font('Segoe UI', 10)
@@ -121,6 +120,7 @@ if (-not $pasta) {
 $bg = [Drawing.Color]::FromArgb(19, 14, 34); $fg = [Drawing.Color]::FromArgb(236, 230, 250)
 $campo = [Drawing.Color]::FromArgb(30, 22, 55)
 $f = New-Object Windows.Forms.Form
+Set-FtcScale $f
 $f.Text = 'Adicionar peca - FTC_CAD'; $f.ClientSize = New-Object Drawing.Size(560, 492)
 $f.StartPosition = 'CenterScreen'; $f.FormBorderStyle = 'FixedDialog'; $f.MaximizeBox = $false
 try { if ($icoApp) { $f.Icon = New-Object Drawing.Icon($icoApp) } } catch {}

@@ -26,13 +26,29 @@ function Get-File($url, $dest) {
     Move-Item -LiteralPath $tmp -Destination $dest -Force
 }
 
+# --- aparencia de app: janelas nitidas em telas com escala (DPI), identidade propria na barra de tarefas ---
+function Initialize-FtcUi {
+    try {
+        Add-Type -AssemblyName System.Windows.Forms
+        Add-Type -AssemblyName System.Drawing
+        Add-Type -Namespace Ftc -Name Nat -MemberDefinition '[DllImport("user32.dll")] public static extern bool SetProcessDPIAware(); [DllImport("shell32.dll", CharSet=CharSet.Unicode)] public static extern int SetCurrentProcessExplicitAppUserModelID(string id);'
+        [void][Ftc.Nat]::SetProcessDPIAware()
+        [void][Ftc.Nat]::SetCurrentProcessExplicitAppUserModelID('FTC.CAD.Catalogo')
+    } catch {}
+    try { [System.Windows.Forms.Application]::EnableVisualStyles() } catch {}
+    try { [System.Windows.Forms.Application]::SetCompatibleTextRenderingDefault($false) } catch {}
+}
+function Set-FtcScale($form) {
+    try { $form.AutoScaleDimensions = New-Object Drawing.SizeF(96, 96); $form.AutoScaleMode = 'Dpi' } catch {}
+}
+
 # janelinha "Atualizando..." (so aparece quando ha versao nova)
 $script:splash = $null
 function Show-Splash($texto) {
     try {
-        Add-Type -AssemblyName System.Windows.Forms
-        Add-Type -AssemblyName System.Drawing
+        Initialize-FtcUi
         $f = New-Object Windows.Forms.Form
+        Set-FtcScale $f
         $f.FormBorderStyle = 'None'; $f.StartPosition = 'CenterScreen'; $f.ClientSize = New-Object Drawing.Size(360, 96)
         $f.BackColor = [Drawing.Color]::FromArgb(30, 22, 55); $f.ForeColor = [Drawing.Color]::FromArgb(236, 230, 250)
         $f.TopMost = $true; $f.ShowInTaskbar = $false
