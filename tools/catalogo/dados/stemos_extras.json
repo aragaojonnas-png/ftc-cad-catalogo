@@ -150,6 +150,49 @@
 ]
 },
 {
+"d": "AndyMark/Transmissão (FRC)/am-3487 40T 20DP 500hex 375 FW.step",
+"u": "https://s3.amazonaws.com/docusync-files/01e04967b452de1705cf8e67081e02944eaa7eb5db82bd9b5a15354483a8b7a8/am-3487%2040T%2020DP%20500hex%20375%20FW.STEP",
+"c": [],
+"s": 759762,
+"i": "https://stemos.com.br/wp-content/uploads/2025/06/am-3487.jpg",
+"t": "Engrenagem 20DP, eixo hexagonal 0,5″, 40 dentes",
+"w": "https://stemos.com.br/produto/11010609/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Transmissão (FRC)",
+"tags": [
+"AndyMark"
+]
+},
+{
+"d": "AndyMark/Transmissão (FRC)/am-5551 2 Stage Powered Elevator.step",
+"u": "https://s3.amazonaws.com/docusync-files/021d9e0be90e83f312b8e535c723c4ae13be13e3cac5a2709b4dab672410d875/am-5551%202%20Stage%20Powered%20Elevator.STEP",
+"c": [],
+"s": 19741457,
+"i": "https://stemos.com.br/wp-content/uploads/2025/01/am-5551.jpg",
+"t": "Sistema elevador, 2 estágios (sem extrusões)",
+"w": "https://stemos.com.br/produto/11049002/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Transmissão (FRC)",
+"tags": []
+},
+{
+"d": "AndyMark/Energia (FRC)/am-0282 120a Circuit Breaker.step",
+"u": "https://s3.amazonaws.com/docusync-files/04a04028b1caeee883fe617c27f6e6646067fbb889c7d48ce72324a0f53653a7/am-0282%20120a%20Circuit%20Breaker.STEP",
+"c": [],
+"s": 2173910,
+"i": "https://stemos.com.br/wp-content/uploads/2020/10/am-0282.1.am-0282.jpg",
+"t": "Disjuntor de 120A",
+"w": "https://stemos.com.br/produto/11008600/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Energia (FRC)",
+"tags": [
+"AndyMark"
+]
+},
+{
 "d": "AndyMark/Hubs (FRC)/am-4124 500 Hex Hub.step",
 "u": "https://s3.amazonaws.com/docusync-files/04cfa2687d4979d6be9b3de2faed8058d85ac5a5f940336426d2ecb9111cdfdb/am-4124%20500%20Hex%20Hub.STEP",
 "c": [],
@@ -172,6 +215,36 @@
 "i": "https://stemos.com.br/wp-content/uploads/2026/03/am-2357_1600x1600.webp",
 "t": "Engrenagem pinhão 20 DP, 17 dentes, eixo redondo 8mm",
 "w": "https://stemos.com.br/produto/11006004/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Transmissão (FRC)",
+"tags": [
+"AndyMark"
+]
+},
+{
+"d": "AndyMark/Compressores e Acumuladores (FRC)/am-2649 574 ml Air Reservoir.step",
+"u": "https://s3.amazonaws.com/docusync-files/0a7d54478c65d75012e0015ace21358940c9bd4bd910961065743fd79202b4a6/am-2649%20574%20ml%20Air%20Reservoir.STEP",
+"c": [],
+"s": 874910,
+"i": "https://stemos.com.br/wp-content/uploads/2022/06/a6.jpg",
+"t": "Reservatório de ar 574 ml",
+"w": "https://stemos.com.br/produto/11004200/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Compressores e Acumuladores (FRC)",
+"tags": [
+"AndyMark"
+]
+},
+{
+"d": "AndyMark/Transmissão (FRC)/am-4787 68T 25 Chain 1125in Plate.step",
+"u": "https://s3.amazonaws.com/docusync-files/0a97425d007fc49b1dd49b59fbd97bc8b6b958139f4f6e8201de3caab9ff3d30/am-4787%2068T%2025%20Chain%201125in%20Plate.STEP",
+"c": [],
+"s": 3664477,
+"i": "https://stemos.com.br/wp-content/uploads/2025/02/am-4787_1.jpg",
+"t": "Coroa #25 – 68 Dentes",
+"w": "https://stemos.com.br/produto/11027308/",
 "f": 1,
 "m": "AndyMark",
 "cat": "Transmissão (FRC)",
@@ -240,6 +313,36 @@
 ]
 },
 {
+"d": "AndyMark/Transmissão (FRC)/am-4784 50T 25 Chain 1125in Plate.step",
+"u": "https://s3.amazonaws.com/docusync-files/12940bd03519473221541addefef2139d0be341f969665ee2885b0264e1de65c/am-4784%2050T%2025%20Chain%201125in%20Plate.STEP",
+"c": [],
+"s": 2816951,
+"i": "https://stemos.com.br/wp-content/uploads/2025/02/am-4784.jpg",
+"t": "Coroa #25 – 50 Dentes",
+"w": "https://stemos.com.br/produto/11027306/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Transmissão (FRC)",
+"tags": [
+"AndyMark"
+]
+},
+{
+"d": "AndyMark/Transmissão (FRC)/am-4797 52T 35 Chain 1125in Plate.step",
+"u": "https://s3.amazonaws.com/docusync-files/169f57c7510f636a2142b02b3b6fd77d5ca59f07ad2566f394ed27de558f5061/am-4797%2052T%2035%20Chain%201125in%20Plate.STEP",
+"c": [],
+"s": 2881155,
+"i": "https://stemos.com.br/wp-content/uploads/2025/06/am-4797.jpg",
+"t": "Coroa #35, furação para rolamento, 52 dentes",
+"w": "https://stemos.com.br/produto/11032706/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Transmissão (FRC)",
+"tags": [
+"AndyMark"
+]
+},
+{
 "d": "AndyMark/Rodas (FRC)/am-0420 8in Rubber Treaded Wheel.step",
 "u": "https://s3.amazonaws.com/docusync-files/17b5110f97009a9491c993950c3a6701bad5288a0a67fa3917cd064c72a3aef3/am-0420%208in%20Rubber%20Treaded%20Wheel.STEP",
 "c": [],
@@ -265,6 +368,21 @@
 "f": 0,
 "m": "AndyMark",
 "cat": "Caixas de Redução",
+"tags": [
+"AndyMark"
+]
+},
+{
+"d": "AndyMark/Transmissão (FRC)/am-3535 25T 20DP 500hex 375 FW.step",
+"u": "https://s3.amazonaws.com/docusync-files/1ae9d29fe145e28bc2e7116e3f01e74cd9c3b0228389f16f7401be44cec223e1/am-3535%2025T%2020DP%20500hex%20375%20FW.STEP",
+"c": [],
+"s": 495190,
+"i": "https://stemos.com.br/wp-content/uploads/2023/05/am-3535.jpg",
+"t": "Engrenagem 20DP, eixo hexagonal 0,5″, 25 dentes",
+"w": "https://stemos.com.br/produto/11010605/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Transmissão (FRC)",
 "tags": [
 "AndyMark"
 ]
@@ -375,6 +493,19 @@
 ]
 },
 {
+"d": "AndyMark/Hubs (FRC)/am-4819 Tube Plug for 1x1x.125.step",
+"u": "https://s3.amazonaws.com/docusync-files/26ac39d560a0b5bfb57f982801106945b0fb0e28730059531241d9ea0c5bc5b7/am-4819%20Tube%20Plug%20for%201x1x.125.STEP",
+"c": [],
+"s": 94372,
+"i": "https://stemos.com.br/wp-content/uploads/2025/03/am-4819.jpg",
+"t": "Acoplador de Tubos 1×1″",
+"w": "https://stemos.com.br/produto/11030201/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Hubs (FRC)",
+"tags": []
+},
+{
 "d": "AndyMark/Caixas de Redução/am-5550_0300_001 NeveRest Hex 1.0 Gearmotor, 3IN Shaft.step",
 "u": "https://s3.amazonaws.com/docusync-files/2a69307516b453af52a83ff4bef516b88bc3388944b9e102d1d1dea117a4b3c9/am-5550_0300_001%20NeveRest%20Hex%201.0%20Gearmotor,%203IN%20Shaft.STEP",
 "c": [],
@@ -465,6 +596,36 @@
 ]
 },
 {
+"d": "AndyMark/Transmissão (FRC)/am-4393 43T 20DP 500hex 375 FW.step",
+"u": "https://s3.amazonaws.com/docusync-files/35ee9803f9e75d4ebabcf1fdb5ebe05f2f9de0bf33d0ffe50b9314b6c045aaef/am-4393%2043T%2020DP%20500hex%20375%20FW.STEP",
+"c": [],
+"s": 813882,
+"i": "https://stemos.com.br/wp-content/uploads/2025/06/am-4393.jpg",
+"t": "Engrenagem 20DP, eixo hexagonal 0,5″, 43 dentes, com alívio de peso",
+"w": "https://stemos.com.br/produto/11010617/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Transmissão (FRC)",
+"tags": [
+"AndyMark"
+]
+},
+{
+"d": "AndyMark/Transmissão (FRC)/am-3486 35T 20DP 500hex 375 FW.step",
+"u": "https://s3.amazonaws.com/docusync-files/364263d2f3e5d61ae0f5ecd2e7c0c8b7a8b0fc9f0f5f2940996c3ab03b1c3104/am-3486%2035T%2020DP%20500hex%20375%20FW.STEP",
+"c": [],
+"s": 677896,
+"i": "https://stemos.com.br/wp-content/uploads/2025/06/am-3486.jpg",
+"t": "Engrenagem 20DP, eixo hexagonal 0,5″, 35 dentes, com alívio de peso",
+"w": "https://stemos.com.br/produto/11010607/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Transmissão (FRC)",
+"tags": [
+"AndyMark"
+]
+},
+{
 "d": "AndyMark/Espaçadores (FRC)/am-3948-375 500H x 375IN Spacer.step",
 "u": "https://s3.amazonaws.com/docusync-files/3657fe4d0616fc860615c84e8430e4a8721a7e4bcf72f87d2ac1b56e23752ff8/am-3948-375%20500H%20x%20375IN%20Spacer.STEP",
 "c": [],
@@ -525,6 +686,21 @@
 ]
 },
 {
+"d": "AndyMark/Transmissão (FRC)/am-3819 46T 20DP 500hex 375 FW.step",
+"u": "https://s3.amazonaws.com/docusync-files/3fd5ca5d937803d4406ee2b9a2e8f7442698baa683dc4dd994c2d3bc8e7afc1d/am-3819%2046T%2020DP%20500hex%20375%20FW.STEP",
+"c": [],
+"s": 869079,
+"i": "https://stemos.com.br/wp-content/uploads/2025/06/am-3819.jpg",
+"t": "Engrenagem 20DP, eixo hexagonal 0,5″, 46 dentes, com alívio de peso",
+"w": "https://stemos.com.br/produto/11010610/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Transmissão (FRC)",
+"tags": [
+"AndyMark"
+]
+},
+{
 "d": "AndyMark/Caixas de Redução (FRC)/am-3973 2 Stage HD - 57 Sport.step",
 "u": "https://s3.amazonaws.com/docusync-files/4108611c3e3492563ef79d7ee9f694b4fa1d8e004fa5fa9e3f39801e7ef28856/am-3973%202%20Stage%20HD%20-%2057%20Sport.STEP",
 "c": [],
@@ -535,6 +711,21 @@
 "f": 1,
 "m": "AndyMark",
 "cat": "Caixas de Redução (FRC)",
+"tags": [
+"AndyMark"
+]
+},
+{
+"d": "AndyMark/Compressores e Acumuladores (FRC)/am-2005 Pneumatic_Compressor_VIAIR_00090.step",
+"u": "https://s3.amazonaws.com/docusync-files/47de53818d99561dfe06b398b1ec8037478c26fc1ae0f2015e6c4b6671cf6882/am-2005%20Pneumatic_Compressor_VIAIR_00090.STEP",
+"c": [],
+"s": 5487955,
+"i": "https://stemos.com.br/wp-content/uploads/2021/03/am-2005_1600x1600.webp",
+"t": "Compressor de ar VIAIR 90C",
+"w": "https://stemos.com.br/produto/11002600/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Compressores e Acumuladores (FRC)",
 "tags": [
 "AndyMark"
 ]
@@ -615,6 +806,51 @@
 ]
 },
 {
+"d": "AndyMark/Transmissão (FRC)/am-4783 44T 25 Chain 1125in Plate.step",
+"u": "https://s3.amazonaws.com/docusync-files/5389dd5ae802c6f9929c4e3ae2ffe5366f700af7d4279f55f5f2d266ad4d5f30/am-4783%2044T%2025%20Chain%201125in%20Plate.STEP",
+"c": [],
+"s": 2618425,
+"i": "https://stemos.com.br/wp-content/uploads/2025/02/am-4783_1.jpg",
+"t": "Coroa #25 – 44 Dentes",
+"w": "https://stemos.com.br/produto/11027305/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Transmissão (FRC)",
+"tags": [
+"AndyMark"
+]
+},
+{
+"d": "AndyMark/Transmissão (FRC)/am-4796 46T 35 Chain 1125in Plate.step",
+"u": "https://s3.amazonaws.com/docusync-files/5511b66f9d8f074f748f6f8f739197526c23bbd9c3af85bacc8d6e7052e3ee7e/am-4796%2046T%2035%20Chain%201125in%20Plate.STEP",
+"c": [],
+"s": 2826969,
+"i": "https://stemos.com.br/wp-content/uploads/2025/06/am-4796.jpg",
+"t": "Coroa #35, furação para rolamento, 46 dentes",
+"w": "https://stemos.com.br/produto/11032705/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Transmissão (FRC)",
+"tags": [
+"AndyMark"
+]
+},
+{
+"d": "AndyMark/Ferramentas (FRC)/am-3914_35 35 Chain Tensioner.step",
+"u": "https://s3.amazonaws.com/docusync-files/597b5c4c3bdd722054900503d0eb66d665f709b57dfdbcdd27f6c23e99d28167/am-3914_35%2035%20Chain%20Tensioner.STEP",
+"c": [],
+"s": 2092875,
+"i": "https://stemos.com.br/wp-content/uploads/2023/11/am-3914_35_1600x1600.webp",
+"t": "Tensionador de Corrente #35",
+"w": "https://stemos.com.br/produto/11027702/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Ferramentas (FRC)",
+"tags": [
+"AndyMark"
+]
+},
+{
 "d": "AndyMark/Espaçadores (FRC)/am-3948-125 500H x 125IN Spacer.step",
 "u": "https://s3.amazonaws.com/docusync-files/5abfed34b841d53343402bd6e6268357ec6ccfbf5e52d0b6cf878e6ba3a00419/am-3948-125%20500H%20x%20125IN%20Spacer.STEP",
 "c": [],
@@ -670,6 +906,36 @@
 "f": 1,
 "m": "AndyMark",
 "cat": "Caixas de Redução (FRC)",
+"tags": [
+"AndyMark"
+]
+},
+{
+"d": "AndyMark/Transmissão (FRC)/am-3815 32T 20DP 500hex 375 FW.step",
+"u": "https://s3.amazonaws.com/docusync-files/68a59f455368903751c2fdf4aa4cb93e44c1bfd6ba764fc7849557d5b26e728f/am-3815%2032T%2020DP%20500hex%20375%20FW.STEP",
+"c": [],
+"s": 629049,
+"i": "https://stemos.com.br/wp-content/uploads/2025/06/am-3815.jpg",
+"t": "Engrenagem 20DP, eixo hexagonal 0,5″, 32 dentes, com alívio de peso",
+"w": "https://stemos.com.br/produto/11010606/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Transmissão (FRC)",
+"tags": [
+"AndyMark"
+]
+},
+{
+"d": "AndyMark/Transmissão (FRC)/am-4711 43T 20DP 500hex 375 FW.step",
+"u": "https://s3.amazonaws.com/docusync-files/6b6de4855677b719096feaa941abbea8e56362f877bcdff34be298f20e120ae9/am-4711%2043T%2020DP%20500hex%20375%20FW.STEP",
+"c": [],
+"s": 801696,
+"i": "https://stemos.com.br/wp-content/uploads/2025/06/am-4711.jpg",
+"t": "Engrenagem 20DP, eixo hexagonal 0,5″, 43 dentes",
+"w": "https://stemos.com.br/produto/11010615/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Transmissão (FRC)",
 "tags": [
 "AndyMark"
 ]
@@ -776,6 +1042,36 @@
 ]
 },
 {
+"d": "AndyMark/Transmissão (FRC)/am-4795 40T 35 Chain 1125in Plate.step",
+"u": "https://s3.amazonaws.com/docusync-files/784d3ece0ef69829b244a5408eeac34d177072685f6d4977e6c39d83214cda8d/am-4795%2040T%2035%20Chain%201125in%20Plate.STEP",
+"c": [],
+"s": 2580413,
+"i": "https://stemos.com.br/wp-content/uploads/2023/11/am-4795-1.jpg",
+"t": "Coroa #35, furação para rolamento, 40 dentes",
+"w": "https://stemos.com.br/produto/11032704/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Transmissão (FRC)",
+"tags": [
+"AndyMark"
+]
+},
+{
+"d": "AndyMark/Transmissão (FRC)/am-4781 32T 25 Chain 1125in Plate.step",
+"u": "https://s3.amazonaws.com/docusync-files/7cdcb923a46c3819134466615fc5b1e8666c51bcfab05fb39854572e9621d3d2/am-4781%2032T%2025%20Chain%201125in%20Plate.STEP",
+"c": [],
+"s": 2217281,
+"i": "https://stemos.com.br/wp-content/uploads/2025/02/am-4781_1.jpg",
+"t": "Coroa #25 – 32 Dentes",
+"w": "https://stemos.com.br/produto/11027301/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Transmissão (FRC)",
+"tags": [
+"AndyMark"
+]
+},
+{
 "d": "AndyMark/Caixas de Redução (FRC)/am-3656 PG188 500 hex Motor Encoder.step",
 "u": "https://s3.amazonaws.com/docusync-files/7d2e5aa554d52f1c443591324ad0b5c17db5a4a2eb9f11b2bd1a18f471cceb0b/am-3656%20PG188%20500%20hex%20Motor%20Encoder.STEP",
 "c": [],
@@ -786,6 +1082,34 @@
 "f": 1,
 "m": "AndyMark",
 "cat": "Caixas de Redução (FRC)",
+"tags": [
+"AndyMark"
+]
+},
+{
+"d": "AndyMark/Caixas de Redução (FRC)/am-5587 Sport Short Shaft Motor Block.step",
+"u": "https://s3.amazonaws.com/docusync-files/8037d61bc9ed3b0a899dbfe91b44623c63f9380b2e2c6af2f312860b8f6eb9c8/am-5587%20Sport%20Short%20Shaft%20Motor%20Block.STEP",
+"c": [],
+"s": 121828,
+"i": "https://stemos.com.br/wp-content/uploads/2025/01/am-5586.jpg",
+"t": "Conjunto de acoplamento para Sport Gearbox – Kraken x60",
+"w": "https://stemos.com.br/produto/11045100/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Caixas de Redução (FRC)",
+"tags": []
+},
+{
+"d": "AndyMark/Transmissão (FRC)/am-4798 58T 35 Chain 1125in Plate.step",
+"u": "https://s3.amazonaws.com/docusync-files/83abf387e682032632731b54f96a3a10cd3e18cf087077de640a7743d8f03297/am-4798%2058T%2035%20Chain%201125in%20Plate.STEP",
+"c": [],
+"s": 3381449,
+"i": "https://stemos.com.br/wp-content/uploads/2023/11/am-4798-1.jpg",
+"t": "Coroa #35, furação para rolamento, 58 dentes",
+"w": "https://stemos.com.br/produto/11032707/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Transmissão (FRC)",
 "tags": [
 "AndyMark"
 ]
@@ -806,6 +1130,36 @@
 ]
 },
 {
+"d": "AndyMark/Transmissão (FRC)/am-4786 62T 25 Chain 1125in Plate.step",
+"u": "https://s3.amazonaws.com/docusync-files/8605fe87498df0f742ab8f8c8ea20f3888d7a970f92d9b9aeadcfcebf8d521c6/am-4786%2062T%2025%20Chain%201125in%20Plate.STEP",
+"c": [],
+"s": 3390745,
+"i": "https://stemos.com.br/wp-content/uploads/2025/02/am-4786_1.jpg",
+"t": "Coroa #25 – 62 Dentes",
+"w": "https://stemos.com.br/produto/11027307/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Transmissão (FRC)",
+"tags": [
+"AndyMark"
+]
+},
+{
+"d": "AndyMark/Transmissão (FRC)/am-4214 24T 20DP 500hex 375 FW.step",
+"u": "https://s3.amazonaws.com/docusync-files/8720753771a812abf54e63a5c837f0bf7cbed02920c7d18ebc0cffc3520c8524/am-4214%2024T%2020DP%20500hex%20375%20FW.STEP",
+"c": [],
+"s": 481272,
+"i": "https://stemos.com.br/wp-content/uploads/2023/05/am-4214.jpg",
+"t": "Engrenagem 20DP, eixo hexagonal 0,5″, 24 dentes",
+"w": "https://stemos.com.br/produto/11010603/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Transmissão (FRC)",
+"tags": [
+"AndyMark"
+]
+},
+{
 "d": "AndyMark/Arenas e Elementos do Jogo/am-2580a FTC Field Rail Link REV3.step",
 "u": "https://s3.amazonaws.com/docusync-files/8818f04b7624ec82e469efd0ae0f5224b442fb98116af645d59a5dd7fe5372be/am-2580a%20FTC%20Field%20Rail%20Link%20REV3.STEP",
 "c": [],
@@ -816,6 +1170,21 @@
 "f": 0,
 "m": "AndyMark",
 "cat": "Arenas e Elementos do Jogo",
+"tags": [
+"AndyMark"
+]
+},
+{
+"d": "AndyMark/Transmissão (FRC)/am-4794 34T 35 Chain 1125in Plate.step",
+"u": "https://s3.amazonaws.com/docusync-files/885948fbfb883f5d317be62b20d55053836f1172c791c0209442bd6115970720/am-4794%2034T%2035%20Chain%201125in%20Plate.STEP",
+"c": [],
+"s": 2316278,
+"i": "https://stemos.com.br/wp-content/uploads/2025/06/am-4794.jpg",
+"t": "Coroa #35, furação para rolamento, 34 dentes",
+"w": "https://stemos.com.br/produto/11032703/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Transmissão (FRC)",
 "tags": [
 "AndyMark"
 ]
@@ -866,6 +1235,21 @@
 ]
 },
 {
+"d": "AndyMark/Transmissão (FRC)/am-4799 64T 35 Chain 1125in Plate.step",
+"u": "https://s3.amazonaws.com/docusync-files/8a8d281e62222ca65324bc6a1846f596f40cefeba27774105b2be9d914d54022/am-4799%2064T%2035%20Chain%201125in%20Plate.STEP",
+"c": [],
+"s": 3478476,
+"i": "https://stemos.com.br/wp-content/uploads/2023/11/am-4799-1.jpg",
+"t": "Coroa #35, furação para rolamento, 64 dentes",
+"w": "https://stemos.com.br/produto/11032708/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Transmissão (FRC)",
+"tags": [
+"AndyMark"
+]
+},
+{
 "d": "AndyMark/Espaçadores (FRC)/am-3948-188 500H x 188IN Spacer.step",
 "u": "https://s3.amazonaws.com/docusync-files/8b27a954e964438be157777d241a8f3411bedffaf3a1790da861ad25d7d4224d/am-3948-188%20500H%20x%20188IN%20Spacer.STEP",
 "c": [],
@@ -896,6 +1280,21 @@
 ]
 },
 {
+"d": "AndyMark/Rodas (FRC)/am-3479La 6 SR Mecanum Left with Standoffs.step",
+"u": "https://s3.amazonaws.com/docusync-files/8f6320720d09616087bb6bd0aaae9ef3411cbaa71849ec87ad6fedc186ba6eca/am-3479La%206%20SR%20Mecanum%20Left%20with%20Standoffs.STEP",
+"c": [],
+"s": 3367762,
+"i": "https://stemos.com.br/wp-content/uploads/2022/06/a2.jpg",
+"t": "Conjunto de 4 rodas mecanum AndyMark",
+"w": "https://stemos.com.br/produto/11003300/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Rodas (FRC)",
+"tags": [
+"AndyMark"
+]
+},
+{
 "d": "AndyMark/Transmissão (FRC)/am-4779 26T 25 Chain 500in Hex Symmetrical.step",
 "u": "https://s3.amazonaws.com/docusync-files/8f817621567c2d6f069ea990c728f1b812789867f4f0124c859a1ee1c1ccbfef/am-4779%2026T%2025%20Chain%20500in%20Hex%20Symmetrical.STEP",
 "c": [],
@@ -907,6 +1306,21 @@
 "m": "AndyMark",
 "cat": "Transmissão (FRC)",
 "tags": []
+},
+{
+"d": "AndyMark/Transmissão (FRC)/am-4792 22T 35 Chain 1125in Plate.step",
+"u": "https://s3.amazonaws.com/docusync-files/91f8347db520407634e73c06e31c2d42cdb21846534db69a3186fea35d346a30/am-4792%2022T%2035%20Chain%201125in%20Plate.STEP",
+"c": [],
+"s": 1914713,
+"i": "https://stemos.com.br/wp-content/uploads/2023/11/am-4792_1.jpg",
+"t": "Coroa #35, furação para rolamento, 22 dentes",
+"w": "https://stemos.com.br/produto/11032701/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Transmissão (FRC)",
+"tags": [
+"AndyMark"
+]
 },
 {
 "d": "AndyMark/Hubs (FRC)/am-5655 375in Hex 3D Print Insert.step",
@@ -934,6 +1348,21 @@
 "f": 0,
 "m": "AndyMark",
 "cat": "Caixas de Redução",
+"tags": [
+"AndyMark"
+]
+},
+{
+"d": "AndyMark/Transmissão (FRC)/am-4212 18T 20DP 500hex 375 FW.step",
+"u": "https://s3.amazonaws.com/docusync-files/97d33cdbe7192097f7ae80ab35dd640a0c2d52bad8d8bf1178e33f21d91cefe8/am-4212%2018T%2020DP%20500hex%20375%20FW.STEP",
+"c": [],
+"s": 420379,
+"i": "https://stemos.com.br/wp-content/uploads/2023/05/am-4212.jpg",
+"t": "Engrenagem 20DP, eixo hexagonal 0,5″, 18 dentes",
+"w": "https://stemos.com.br/produto/11010601/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Transmissão (FRC)",
 "tags": [
 "AndyMark"
 ]
@@ -969,6 +1398,21 @@
 ]
 },
 {
+"d": "AndyMark/Rodas (FRC)/am-3479Ra 6 SR Mecanum Right with Standoffs.step",
+"u": "https://s3.amazonaws.com/docusync-files/9e52af52107aba8b4bb26220ee2c828d6fbeb15802e95eb1cca8850676471a91/am-3479Ra%206%20SR%20Mecanum%20Right%20with%20Standoffs.STEP",
+"c": [],
+"s": 6150711,
+"i": "https://stemos.com.br/wp-content/uploads/2022/06/a2.jpg",
+"t": "Conjunto de 4 rodas mecanum AndyMark",
+"w": "https://stemos.com.br/produto/11003300/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Rodas (FRC)",
+"tags": [
+"AndyMark"
+]
+},
+{
 "d": "AndyMark/Transmissão (FRC)/am-0741 12T 20DP 8mm Key 500FW Gear REV 3.step",
 "u": "https://s3.amazonaws.com/docusync-files/9ebcf659428500d07f4c272fd73041b2735dc6bdf8cd4692c1ba11ac191bbb1e/am-0741%2012T%2020DP%208mm%20Key%20500FW%20Gear%20REV%203.STEP",
 "c": [],
@@ -976,6 +1420,21 @@
 "i": "https://stemos.com.br/wp-content/uploads/2026/03/am-0741_1600x1600.webp",
 "t": "Engrenagem pinhão 20 DP, 12 dentes, eixo redondo 8mm",
 "w": "https://stemos.com.br/produto/11006001/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Transmissão (FRC)",
+"tags": [
+"AndyMark"
+]
+},
+{
+"d": "AndyMark/Transmissão (FRC)/am-3816 36T 20DP 500hex 375 FW.step",
+"u": "https://s3.amazonaws.com/docusync-files/9f9b470080e6520fc5188fa726a947be5d60534712afb8a81136f2bdc13ce0a2/am-3816%2036T%2020DP%20500hex%20375%20FW.STEP",
+"c": [],
+"s": 697437,
+"i": "https://stemos.com.br/wp-content/uploads/2025/06/am-3816.jpg",
+"t": "Engrenagem 20DP, eixo hexagonal 0,5″, 36 dentes, com alívio de peso",
+"w": "https://stemos.com.br/produto/11010608/",
 "f": 1,
 "m": "AndyMark",
 "cat": "Transmissão (FRC)",
@@ -1014,6 +1473,19 @@
 ]
 },
 {
+"d": "AndyMark/Caixas de Redução (FRC)/am-3770a Sport Long Shaft Motor Block.step",
+"u": "https://s3.amazonaws.com/docusync-files/a140a0c5be1c3f0fc1bfde5b69cd55c6917d73ca2ae7ed04c9b04094cea37ab4/am-3770a%20Sport%20Long%20Shaft%20Motor%20Block.STEP",
+"c": [],
+"s": 135357,
+"i": "https://stemos.com.br/wp-content/uploads/2025/01/am-5586.jpg",
+"t": "Conjunto de acoplamento para Sport Gearbox – Kraken x60",
+"w": "https://stemos.com.br/produto/11045100/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Caixas de Redução (FRC)",
+"tags": []
+},
+{
 "d": "AndyMark/Transmissão (FRC)/am-5633 18T 20DP Kraken Spline Bore Gear.step",
 "u": "https://s3.amazonaws.com/docusync-files/a2de8cd4543c6e9a863f76b2d7b2487649841a63872b56d6f7a80de35b57a910/am-5633%2018T%2020DP%20Kraken%20Spline%20Bore%20Gear.STEP",
 "c": [],
@@ -1039,6 +1511,21 @@
 "f": 0,
 "m": "AndyMark",
 "cat": "Motores e Servos",
+"tags": [
+"AndyMark"
+]
+},
+{
+"d": "AndyMark/Eixos (FRC)/am-0588_long 8mm 500 Hex Adapter Shaft 1000 long.step",
+"u": "https://s3.amazonaws.com/docusync-files/a986a3ad8064bcb760c80b273d1b1fe8eb09e4af73f635ded5ed24769f15d5cf/am-0588_long%208mm%20500%20Hex%20Adapter%20Shaft%201000%20long.STEP",
+"c": [],
+"s": 88859,
+"i": "https://stemos.com.br/wp-content/uploads/2025/02/am-0588_long.jpg",
+"t": "Adaptador de eixo 8 mm para Hex 0,5″, 1″ de comprimento",
+"w": "https://stemos.com.br/produto/11047702/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Eixos (FRC)",
 "tags": [
 "AndyMark"
 ]
@@ -1102,6 +1589,19 @@
 "tags": [
 "AndyMark"
 ]
+},
+{
+"d": "AndyMark/Caixas de Redução (FRC)/am-5409 Ratchet Sport Servo.step",
+"u": "https://s3.amazonaws.com/docusync-files/b3cd3a7bb605c254071e1e94c9333caec5246647fa64cf7d5e0d2ae7bb6f53ad/am-5409%20Ratchet%20Sport%20Servo.STEP",
+"c": [],
+"s": 11482584,
+"i": "https://stemos.com.br/wp-content/uploads/2024/12/am-5409.jpg",
+"t": "Catraca para Sport Gearbox com atuação por servomotor",
+"w": "https://stemos.com.br/produto/11018102/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Caixas de Redução (FRC)",
+"tags": []
 },
 {
 "d": "AndyMark/Caixas de Redução/am-5550_0300_004 NeveRest Hex 3.7 Gearmotor, 3IN Shaft.step",
@@ -1239,6 +1739,21 @@
 ]
 },
 {
+"d": "AndyMark/Ferramentas (FRC)/am-3915_25 25 Chain Inline Tensioner REV3.step",
+"u": "https://s3.amazonaws.com/docusync-files/ca5a73541c52aa101e24c9d76f8fba5fd8847e4eac795bd2eeaa930d307b36fb/am-3915_25%2025%20Chain%20Inline%20Tensioner%20REV3.STEP",
+"c": [],
+"s": 905177,
+"i": "https://stemos.com.br/wp-content/uploads/2023/11/am-3915_25_1600x1600.webp",
+"t": "Tensionador de corrente #25 AndyMark",
+"w": "https://stemos.com.br/produto/11027701/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Ferramentas (FRC)",
+"tags": [
+"AndyMark"
+]
+},
+{
 "d": "AndyMark/Arenas e Elementos do Jogo/am-5852_blue Blue Alliance Nectar.step",
 "u": "https://s3.amazonaws.com/docusync-files/d085dfaa85e816f8f80b1e667b3d94f4c10d7fff3e2194cf48bec6ab628e9c15/am-5852_blue%20Blue%20Alliance%20Nectar.STEP",
 "c": [],
@@ -1249,6 +1764,21 @@
 "f": 0,
 "m": "AndyMark",
 "cat": "Arenas e Elementos do Jogo",
+"tags": [
+"AndyMark"
+]
+},
+{
+"d": "AndyMark/Transmissão (FRC)/am-3645 19T 20DP 375hex 375 FW.step",
+"u": "https://s3.amazonaws.com/docusync-files/d1c28202038c410f0d1a432003f4d8f23a231c23f87282b826ad4c9701c50c31/am-3645%2019T%2020DP%20375hex%20375%20FW.STEP",
+"c": [],
+"s": 390424,
+"i": "https://stemos.com.br/wp-content/uploads/2025/06/am-3645.jpg",
+"t": "Engrenagem 20DP, eixo hexagonal 0,375″, 19 dentes",
+"w": "https://stemos.com.br/produto/11010627/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Transmissão (FRC)",
 "tags": [
 "AndyMark"
 ]
@@ -1314,6 +1844,21 @@
 ]
 },
 {
+"d": "AndyMark/Transmissão (FRC)/am-4712 45T 20DP 500hex 375 FW.step",
+"u": "https://s3.amazonaws.com/docusync-files/d4da454e51e5e5fe77fb91d02701000fd3bbe32e8afa68245852ace1e04e4912/am-4712%2045T%2020DP%20500hex%20375%20FW.STEP",
+"c": [],
+"s": 837169,
+"i": "https://stemos.com.br/wp-content/uploads/2025/06/am-4712.jpg",
+"t": "Engrenagem 20DP, eixo hexagonal 0,5″, 45 dentes",
+"w": "https://stemos.com.br/produto/11010616/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Transmissão (FRC)",
+"tags": [
+"AndyMark"
+]
+},
+{
 "d": "AndyMark/Rodas (FRC)/am-5123 5IN 500IN Hex Bore Compliant Star.step",
 "u": "https://s3.amazonaws.com/docusync-files/d8bb544db52717a76c83b25c569c0c754c60125b6e4f4818a7bab4662e464869/am-5123%205IN%20500IN%20Hex%20Bore%20Compliant%20Star.STEP",
 "c": [],
@@ -1324,6 +1869,21 @@
 "f": 1,
 "m": "AndyMark",
 "cat": "Rodas (FRC)",
+"tags": [
+"AndyMark"
+]
+},
+{
+"d": "AndyMark/Transmissão (FRC)/am-4782 38T 25 Chain 1125in Plate.step",
+"u": "https://s3.amazonaws.com/docusync-files/d8fbb9163a08bcb983672bd91c4b9337102070fae1798a95dc54d6035ff6c980/am-4782%2038T%2025%20Chain%201125in%20Plate.STEP",
+"c": [],
+"s": 2573936,
+"i": "https://stemos.com.br/wp-content/uploads/2025/02/am-4782_1.jpg",
+"t": "Coroa #25 – 38 Dentes",
+"w": "https://stemos.com.br/produto/11027303/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Transmissão (FRC)",
 "tags": [
 "AndyMark"
 ]
@@ -1359,6 +1919,21 @@
 ]
 },
 {
+"d": "AndyMark/Transmissão (FRC)/am-4215 30T 20DP 500hex 375 FW.step",
+"u": "https://s3.amazonaws.com/docusync-files/e5998efb1adc26f01aba8faad24e509094c97ef67742f48cadf50e0d2b0c084c/am-4215%2030T%2020DP%20500hex%20375%20FW.STEP",
+"c": [],
+"s": 595578,
+"i": "https://stemos.com.br/wp-content/uploads/2023/05/am-4215.jpg",
+"t": "Engrenagem 20DP, eixo hexagonal 0,5″, 30 dentes com alívio de peso",
+"w": "https://stemos.com.br/produto/11010604/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Transmissão (FRC)",
+"tags": [
+"AndyMark"
+]
+},
+{
 "d": "AndyMark/Caixas de Redução (FRC)/am-3973 2 Stage SD - 57 Sport.step",
 "u": "https://s3.amazonaws.com/docusync-files/e5f1e587d3572ee9e9392f3c197cfa230cc169ff389ef0a04ce9f7509e01c852/am-3973%202%20Stage%20SD%20-%2057%20Sport.STEP",
 "c": [],
@@ -1374,6 +1949,21 @@
 ]
 },
 {
+"d": "AndyMark/Rodas/am-3563 4IN Compliant Wheel 8mm Nub Bore.step",
+"u": "https://s3.amazonaws.com/docusync-files/e6c5c19633eac3b2041a190e91da6aef7f7d6f2b496d98ad9dcd666bf8d19e5f/am-3563%204IN%20Compliant%20Wheel%208mm%20Nub%20Bore.STEP",
+"c": [],
+"s": 2301366,
+"i": "https://stemos.com.br/wp-content/uploads/2025/04/am-3563_black.jpg",
+"t": "Roda Flexível 4″, 60A, eixo Nub Hub",
+"w": "https://stemos.com.br/produto/11004712/",
+"f": 0,
+"m": "AndyMark",
+"cat": "Rodas",
+"tags": [
+"AndyMark"
+]
+},
+{
 "d": "AndyMark/Hubs (FRC)/am-4117 Bearing Hub.step",
 "u": "https://s3.amazonaws.com/docusync-files/e72e938010c68778b4d8bbe9c7e230eb83b76de9d339034e928aa32a41ababb3/am-4117%20Bearing%20Hub.STEP",
 "c": [],
@@ -1384,6 +1974,21 @@
 "f": 1,
 "m": "AndyMark",
 "cat": "Hubs (FRC)",
+"tags": [
+"AndyMark"
+]
+},
+{
+"d": "AndyMark/Transmissão (FRC)/am-3646 21T 20DP 375hex 375 FW.step",
+"u": "https://s3.amazonaws.com/docusync-files/e76392b3abd4804ceda51e80b94b459d29b6d04b1718bef44d6d4f800d53ee15/am-3646%2021T%2020DP%20375hex%20375%20FW.STEP",
+"c": [],
+"s": 425763,
+"i": "https://stemos.com.br/wp-content/uploads/2025/06/am-3485.jpg",
+"t": "Engrenagem 20DP, eixo hexagonal 0,375″, 24 dentes",
+"w": "https://stemos.com.br/produto/11010629/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Transmissão (FRC)",
 "tags": [
 "AndyMark"
 ]
@@ -1417,6 +2022,34 @@
 "tags": [
 "AndyMark"
 ]
+},
+{
+"d": "AndyMark/Transmissão (FRC)/am-4213 20T 20DP 500hex 375 FW.step",
+"u": "https://s3.amazonaws.com/docusync-files/eec61bfd890e38c04d721b7aaa3e7ba08693c722d7b7d8f61527cc3c784705de/am-4213%2020T%2020DP%20500hex%20375%20FW.STEP",
+"c": [],
+"s": 416064,
+"i": "https://stemos.com.br/wp-content/uploads/2023/05/am-4213.jpg",
+"t": "Engrenagem 20DP, eixo hexagonal 0,5″, 20 dentes",
+"w": "https://stemos.com.br/produto/11010602/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Transmissão (FRC)",
+"tags": [
+"AndyMark"
+]
+},
+{
+"d": "AndyMark/Hubs (FRC)/am-4762 Tube Plug for 2x1x.125.step",
+"u": "https://s3.amazonaws.com/docusync-files/ef07a0c5ed9af15349a9eb623bf3773c4b5030634f626554e0bcdcd3085f8e70/am-4762%20Tube%20Plug%20for%202x1x.125.STEP",
+"c": [],
+"s": 137627,
+"i": "https://stemos.com.br/wp-content/uploads/2025/03/am-4762_4.jpg",
+"t": "Acoplador de Tubos 2×1″",
+"w": "https://stemos.com.br/produto/11030202/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Hubs (FRC)",
+"tags": []
 },
 {
 "d": "AndyMark/Transmissão (FRC)/am-4775 18T 25 Chain 500in Hex Symmetrical.step",
@@ -1472,6 +2105,21 @@
 "f": 0,
 "m": "AndyMark",
 "cat": "Caixas de Redução",
+"tags": [
+"AndyMark"
+]
+},
+{
+"d": "AndyMark/Transmissão (FRC)/am-4793 28T 35 Chain 1125in Plate.step",
+"u": "https://s3.amazonaws.com/docusync-files/fc3bc9cec77d4bad862dab48504a5787bd40d837da083dd57ce9a995b00f54a4/am-4793%2028T%2035%20Chain%201125in%20Plate.STEP",
+"c": [],
+"s": 2278756,
+"i": "https://stemos.com.br/wp-content/uploads/2023/11/am-4793_1.jpg",
+"t": "Coroa #35, furação para rolamento, 28 dentes",
+"w": "https://stemos.com.br/produto/11032702/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Transmissão (FRC)",
 "tags": [
 "AndyMark"
 ]

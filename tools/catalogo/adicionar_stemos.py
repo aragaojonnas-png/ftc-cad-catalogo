@@ -93,12 +93,13 @@ if __name__ == "__main__":
     man = json.load(open(os.path.join(AQUI, "manifesto_full.json")))
     rev = json.load(open(os.path.join(AQUI, "rev_variantes.json"), encoding="utf-8"))
     man += json.load(open(os.path.join(AQUI, "andymark_manifesto.json"), encoding="utf-8"))
+    novos_links = json.load(open(os.path.join(AQUI, "andymark_links.json"), encoding="utf-8"))   # cdn.andymark.com saiu do ar (buscar_andymark.py)
     ja = {ukey(e["u"]) for e in man}
     cand = defaultdict(list)
     for s in st:
         if any(c["name"] == "Kits" for c in s["categories"]) or EXCL.search(html.unescape(s["name"])): continue
         for l in set(re.findall(r'href=\\?"([^"\\]+)"', s["description"])):
-            l = html.unescape(l)
+            l = novos_links.get(html.unescape(l), html.unescape(l))
             if re.search(r"\.(step|stp|zip)$", l.split("?")[0], re.I) and ukey(l) not in ja: cand[l].append(s)
     print(len(cand), "links para conferir")
     with cf.ThreadPoolExecutor(8) as ex: res = dict(ex.map(confere, sorted(cand)))

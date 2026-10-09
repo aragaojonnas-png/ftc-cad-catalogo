@@ -25,7 +25,8 @@ Por isso, **a raiz do repositorio precisa manter `FTC_CAD.exe`, `catalogo.html`,
   - `manifesto_full.json` (goBILDA/REV raspados), `andymark_manifesto.json` + `andymark_rows.json` (AndyMark Stealth/Sushi), `stemos.json.gz` (catalogo da loja stemOS).
   - `rev_variantes.json`: nome de cada codigo REV (gerado por `buscar_variantes_rev.py`, precisa de internet). Usado para o campo `v`: nome diferenciado que o cartao mostra como titulo quando varias pecas tem o mesmo (REV: nome da variante; goBILDA: titulo + serie). O arquivo/caminho continua com o nome original.
   - `stemos_extras.json`: pecas que a stemOS vende com STEP e que nao estavam no manifesto (WCP, AndyMark, CTR, Axon, SDS...), sem kits (gerado por `adicionar_stemos.py`, precisa de internet; confere cada link baixando). Pecas FRC vao em pastas `... (FRC)` e o app nao as baixa sozinho no modo "tudo".
-  - Para atualizar a stemOS: trocar `stemos.json.gz`, rodar `adicionar_stemos.py` e depois `build_catalog.py`.
+  - `andymark_links.json`: o dominio `cdn.andymark.com` (links antigos da stemOS) nao existe mais; este arquivo troca cada link antigo pelo atual (s3 docusync, achado na pagina do produto em andymark.com por `buscar_andymark.py`). `adicionar_stemos.py` aplica a troca sozinho.
+  - Para atualizar a stemOS: trocar `stemos.json.gz`, rodar `buscar_andymark.py`, `adicionar_stemos.py` e depois `build_catalog.py`. Antes de publicar, conferir que o total de entradas novas nao diminuiu (rede bloqueada faz o script gravar menos; desfazer com `git checkout tools/catalogo/dados/stemos_extras.json`).
 
 ## Limites conhecidos
 O site da WCP responde 406 se o User-Agent for so "Mozilla/5.0": o app usa um User-Agent de navegador completo (`Rede.Agente`). Alguns links da stemOS ficam de fora por estarem fora do ar ou bloqueados (ver saida de `adicionar_stemos.py`).
