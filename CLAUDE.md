@@ -23,7 +23,7 @@ Por isso, **a raiz do repositorio precisa manter `FTC_CAD.exe`, `catalogo.html`,
 - `src/` codigo-fonte do app e icone.
 - `tools/catalogo/` gerador do `catalogo.html` **e do `manifesto.json`** (`python3 build_catalog.py`; roda fora da sessao original, usa so `dados/`). Dados:
   - `manifesto_full.json` (goBILDA/REV raspados), `andymark_manifesto.json` + `andymark_rows.json` (AndyMark Stealth/Sushi), `stemos.json.gz` (catalogo da loja stemOS).
-  - `rev_variantes.json`: nome de cada codigo REV (gerado por `buscar_variantes_rev.py`, precisa de internet). Usado para o campo `v`, que diferencia cartoes de mesmo titulo (REV: variante; goBILDA: serie).
+  - `rev_variantes.json`: nome de cada codigo REV (gerado por `buscar_variantes_rev.py`, precisa de internet). Usado para o campo `v`: nome diferenciado que o cartao mostra como titulo quando varias pecas tem o mesmo (REV: nome da variante; goBILDA: titulo + serie). O arquivo/caminho continua com o nome original.
   - `stemos_extras.json`: pecas que a stemOS vende com STEP e que nao estavam no manifesto (WCP, AndyMark, CTR, Axon, SDS...), sem kits (gerado por `adicionar_stemos.py`, precisa de internet; confere cada link baixando). Pecas FRC vao em pastas `... (FRC)` e o app nao as baixa sozinho no modo "tudo".
   - Para atualizar a stemOS: trocar `stemos.json.gz`, rodar `adicionar_stemos.py` e depois `build_catalog.py`.
 

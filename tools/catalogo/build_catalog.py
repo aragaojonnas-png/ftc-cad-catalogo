@@ -65,7 +65,7 @@ for e in _estemos:
 rows += json.load(open("andymark_rows.json", encoding="utf-8"))   # fotos da AndyMark (Stealth e Sushi), guardadas em dados/
 from tipos import tipo, tipo_stemos
 for r in rows: r["g"] = tipo_stemos(r["p"], r["n"]) if r.pop("_e", 0) else tipo(r["p"], r["n"])
-# ---- pecas com o mesmo titulo: guarda em "v" o que diferencia (nome da variante na REV; serie na goBILDA) ----
+# ---- pecas com o mesmo titulo: "v" e o nome diferenciado, mostrado como titulo do cartao (REV: nome da variante; goBILDA: titulo + serie) ----
 _rev = json.load(open("rev_variantes.json", encoding="utf-8"))   # gerado por buscar_variantes_rev.py
 def _cod_tit(n):
     m = re.match(r"^(.+?) - (.+)$", n)
@@ -79,7 +79,7 @@ for g in _grupos.values():
     for r in g:
         cod = _cod_tit(r["n"])[0]
         if r["m"] == "REV" and _rev.get(cod): r["v"] = _rev[cod]
-        elif r["m"] == "goBILDA" and re.match(r"\d{4}-", cod): r["v"] = "Série " + cod[:4]
+        elif r["m"] == "goBILDA" and re.match(r"\d{4}-", cod): r["v"] = "%s (Série %s)" % (_cod_tit(r["n"])[1], cod[:4])
     vs = [r.get("v") for r in g]
     if len(set(vs)) < len(vs):                      # nao diferenciou: melhor nao mostrar nada
         for r in g: r.pop("v", None)
@@ -129,7 +129,6 @@ main{padding:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200
 .ph.none{color:#8b8aa0;font-size:12px}
 .b{padding:10px 12px 11px;display:flex;flex-direction:column;gap:2px;flex:1}
 .code{font:600 12px/1.3 ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--acc);word-break:break-all}
-.vr{font-size:12px;font-weight:600;color:var(--shop);line-height:1.3;margin-top:1px}
 .name{font-size:13.5px;font-weight:500;line-height:1.35;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;min-height:3.9em}
 .path{color:var(--mute);font-size:12px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .meta{display:flex;gap:6px;align-items:center;margin-top:auto;padding-top:8px;color:var(--mute);font-size:12px}
@@ -240,7 +239,7 @@ function draw(){
   $('grid').innerHTML = part.length ? part.map((r, i) => { const [code, title] = split(r.n), last = r.p.split('/').pop();
     return `<div class="card" data-i="${i}" tabindex="0" role="button" title="Clique para copiar o caminho do arquivo">
       <div class="ph ${r.i ? '' : 'none'}">${r.i ? `<img loading="lazy" referrerpolicy="no-referrer" src="${esc(r.i)}" alt="">` : 'sem foto'}</div>
-      <div class="b">${code ? `<div class="code">${esc(code)}</div>` : ''}${r.v ? `<div class="vr">${esc(r.v)}</div>` : ''}<div class="name">${esc(title)}</div>
+      <div class="b">${code ? `<div class="code">${esc(code)}</div>` : ''}<div class="name">${esc(r.v || title)}</div>
       <div class="path">${esc(r.m)} · ${esc(r.g === last ? r.p.split('/').slice(-2).join(' / ') : last)}</div>
       <div class="meta">${r.l ? '<span class="tag shop">stemOS</span>' : ''}${r.x ? '<span class="tag eq" title="Adicionada por ' + esc(r.b || 'alguém da equipe') + '">' + esc(r.gr || 'Equipe') + '</span>' : ''}${r.f ? '<span class="tag">FRC</span>' : ''}${dlMode() && !r.x ? (isDL(r) ? '<span class="dl ok" title="Este arquivo já está na sua pasta">no PC</span>' : '<span class="dl no" title="Clique no cartão para baixar só esta peça">baixar</span>') : ''}${r.x ? '<a class="rm" href="ftccad://remover?arquivo=' + encodeURIComponent(r.a) + '" title="Remover esta peça da pasta da equipe">remover</a>' : ''}<span class="sz">${r.s ? r.s + ' MB' : ''}</span></div></div>
     </div>`; }).join('') : '<div class="empty">Nenhuma peça encontrada. Tente outra palavra ou limpe os filtros.</div>';
