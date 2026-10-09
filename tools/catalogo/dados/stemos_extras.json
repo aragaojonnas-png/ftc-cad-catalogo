@@ -268,6 +268,21 @@
 ]
 },
 {
+"d": "AndyMark/Transmissão (FRC)/am-3822 56T 20DP 500hex 375 FW.step",
+"u": "https://s3.amazonaws.com/docusync-files/0fc593b2791385b50b5d7c008f5825f6d86229d57cafce0425d9fc8659b461bc/am-3822%2056T%2020DP%20500hex%20375%20FW.STEP",
+"c": [],
+"s": 1042330,
+"i": "https://stemos.com.br/wp-content/uploads/2025/06/am-3822.jpg",
+"t": "Engrenagem 20DP, eixo hexagonal 0,5″, 56 dentes, com alívio de peso",
+"w": "https://stemos.com.br/produto/11010613/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Transmissão (FRC)",
+"tags": [
+"AndyMark"
+]
+},
+{
 "d": "AndyMark/Espaçadores (FRC)/am-3948-100 500H x 100IN Spacer.step",
 "u": "https://s3.amazonaws.com/docusync-files/117c7a1dcf097d6996222f88079b1061fd2a93b4373dd1334cbe58165463e895/am-3948-100%20500H%20x%20100IN%20Spacer.STEP",
 "c": [],
@@ -701,6 +716,21 @@
 ]
 },
 {
+"d": "AndyMark/Transmissão (FRC)/am-3488 50T 20DP 500hex 375 FW.step",
+"u": "https://s3.amazonaws.com/docusync-files/402e31f5d1eb50461aad11dee09f824079e4796076795242274913f3fb7afb8a/am-3488%2050T%2020DP%20500hex%20375%20FW.STEP",
+"c": [],
+"s": 938489,
+"i": "https://stemos.com.br/wp-content/uploads/2025/06/am-3488.jpg",
+"t": "Engrenagem 20DP, eixo hexagonal 0,5″, 50 dentes, com alívio de peso",
+"w": "https://stemos.com.br/produto/11010611/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Transmissão (FRC)",
+"tags": [
+"AndyMark"
+]
+},
+{
 "d": "AndyMark/Caixas de Redução (FRC)/am-3973 2 Stage HD - 57 Sport.step",
 "u": "https://s3.amazonaws.com/docusync-files/4108611c3e3492563ef79d7ee9f694b4fa1d8e004fa5fa9e3f39801e7ef28856/am-3973%202%20Stage%20HD%20-%2057%20Sport.STEP",
 "c": [],
@@ -1100,6 +1130,21 @@
 "tags": []
 },
 {
+"d": "AndyMark/Transmissão (FRC)/am-4714 48T 20DP 500hex 375 FW.step",
+"u": "https://s3.amazonaws.com/docusync-files/8256699ed4bafb1c73a351793d3c12295f74397717b3362f6d18c0c0823cab07/am-4714%2048T%2020DP%20500hex%20375%20FW.STEP",
+"c": [],
+"s": 892599,
+"i": "https://stemos.com.br/wp-content/uploads/2025/06/am-4714.jpg",
+"t": "Engrenagem 20DP, eixo hexagonal 0,5″, 48 dentes",
+"w": "https://stemos.com.br/produto/11010614/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Transmissão (FRC)",
+"tags": [
+"AndyMark"
+]
+},
+{
 "d": "AndyMark/Transmissão (FRC)/am-4798 58T 35 Chain 1125in Plate.step",
 "u": "https://s3.amazonaws.com/docusync-files/83abf387e682032632731b54f96a3a10cd3e18cf087077de640a7743d8f03297/am-4798%2058T%2035%20Chain%201125in%20Plate.STEP",
 "c": [],
@@ -1306,6 +1351,21 @@
 "m": "AndyMark",
 "cat": "Transmissão (FRC)",
 "tags": []
+},
+{
+"d": "AndyMark/Motores e Servos/am-4954 AndyMark Programmable Servo.step",
+"u": "https://s3.amazonaws.com/docusync-files/8fead50f7b3e14765226314a9db815d1332dbeace5af5f470f5f18a703047e93/am-4954%20AndyMark%20Programmable%20Servo.STEP",
+"c": [],
+"s": 6326294,
+"i": "https://stemos.com.br/wp-content/uploads/2025/09/servos.jpg",
+"t": "Servos Inteligentes AndyMark com Feedback Analógico",
+"w": "https://stemos.com.br/produto/servos-andymark/",
+"f": 0,
+"m": "AndyMark",
+"cat": "Motores e Servos",
+"tags": [
+"AndyMark"
+]
 },
 {
 "d": "AndyMark/Transmissão (FRC)/am-4792 22T 35 Chain 1125in Plate.step",
@@ -1516,6 +1576,21 @@
 ]
 },
 {
+"d": "AndyMark/Transmissão (FRC)/am-3821 52T 20DP 500hex 375 FW.step",
+"u": "https://s3.amazonaws.com/docusync-files/a6b9d162e3129f097da1ab7297637c66ba6c512d0be65bfed8e3adbfa186be40/am-3821%2052T%2020DP%20500hex%20375%20FW.STEP",
+"c": [],
+"s": 973586,
+"i": "https://stemos.com.br/wp-content/uploads/2025/06/am-3821.jpg",
+"t": "Engrenagem 20DP, eixo hexagonal 0,5″, 52 dentes, com alívio de peso",
+"w": "https://stemos.com.br/produto/11010612/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Transmissão (FRC)",
+"tags": [
+"AndyMark"
+]
+},
+{
 "d": "AndyMark/Eixos (FRC)/am-0588_long 8mm 500 Hex Adapter Shaft 1000 long.step",
 "u": "https://s3.amazonaws.com/docusync-files/a986a3ad8064bcb760c80b273d1b1fe8eb09e4af73f635ded5ed24769f15d5cf/am-0588_long%208mm%20500%20Hex%20Adapter%20Shaft%201000%20long.STEP",
 "c": [],
@@ -1644,6 +1719,21 @@
 "f": 0,
 "m": "AndyMark",
 "cat": "Motores e Servos",
+"tags": [
+"AndyMark"
+]
+},
+{
+"d": "AndyMark/Sensores (FRC)/am-5170 ELP_10-32_Mount_Bottom.step",
+"u": "https://s3.amazonaws.com/docusync-files/c16fdfe1f03782406536090938a2bb1316dd75e6fd1f438f97d4b189bc99dfc4/am-5170%20ELP_10-32_Mount_Bottom.STEP",
+"c": [],
+"s": 179674,
+"i": "https://stemos.com.br/wp-content/uploads/2023/12/am-5170_1.jpeg",
+"t": "ELP Fisheye Lens Camera",
+"w": "https://stemos.com.br/produto/11037400/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Sensores (FRC)",
 "tags": [
 "AndyMark"
 ]
@@ -1884,6 +1974,21 @@
 "f": 1,
 "m": "AndyMark",
 "cat": "Transmissão (FRC)",
+"tags": [
+"AndyMark"
+]
+},
+{
+"d": "AndyMark/Sensores (FRC)/am-5170 ELP_10-32_Mount_Top.step",
+"u": "https://s3.amazonaws.com/docusync-files/d92c04f991998cf36ba745b9bfcf6f54406dd164dd0f68e8e665ceab6ee993d2/am-5170%20ELP_10-32_Mount_Top.STEP",
+"c": [],
+"s": 242096,
+"i": "https://stemos.com.br/wp-content/uploads/2023/12/am-5170_1.jpeg",
+"t": "ELP Fisheye Lens Camera",
+"w": "https://stemos.com.br/produto/11037400/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Sensores (FRC)",
 "tags": [
 "AndyMark"
 ]

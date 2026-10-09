@@ -25,21 +25,49 @@ def nome_arquivo(url):
     return urllib.parse.unquote(url.split("?")[0].rsplit("/", 1)[-1])
 
 
-def acha(arquivo):
-    codigo = re.match(r"am-[0-9A-Za-z]+", arquivo, re.I)
-    if not codigo: return None
-    codigo = codigo.group(0).lower()
+def descricao(arquivo):
+    """nome sem o codigo (am-3488) e sem a extensao, para achar o mesmo arquivo quando o codigo mudou"""
+    d = re.sub(r"\.(step|stp)$", "", arquivo, flags=re.I)
+    d = re.sub(r"^am-[0-9A-Za-z_]+\s+", "", d, flags=re.I)
+    return re.sub(r"[\s_]+", " ", d).strip().lower()
+
+
+def produtos(q):
     try:
-        j = json.loads(get("https://andymark.com/search/suggest.json?q=%s&resources%%5Btype%%5D=product&resources%%5Blimit%%5D=6" % urllib.parse.quote(codigo)))
+        j = json.loads(get("https://andymark.com/search/suggest.json?q=%s&resources%%5Btype%%5D=product&resources%%5Blimit%%5D=6" % urllib.parse.quote(q)))
+        return j["resources"]["results"]["products"]
     except Exception:
-        return None
-    for p in j["resources"]["results"]["products"]:
-        links = LINK_CAD.findall(pagina(p["url"].split("?")[0]))
-        exato = [l for l in links if nome_arquivo(l).lower() == arquivo.lower()]
-        if exato: return exato[0]
+        return []
+
+
+def acha(arquivo):
+    """devolve (link_novo, como): como = 'igual' (mesmo nome), 'descricao' (mesmo nome sem o codigo) ou 'codigo'"""
+    codigo = re.match(r"am-[0-9A-Za-z]+", arquivo, re.I)
+    codigo = codigo.group(0).lower() if codigo else None
+    desc = descricao(arquivo)
+    consultas = ([codigo] if codigo else []) + ([desc] if len(desc) >= 8 else [])
+    links = []
+    for q in consultas:
+        for p in produtos(q):
+            for l in LINK_CAD.findall(pagina(p["url"].split("?")[0])):
+                if l not in links: links.append(l)
+    if not any(descricao(nome_arquivo(l)) == desc for l in links):       # nao achou: tenta pares de palavras da descricao
+        pal = desc.split()
+        for q in [" ".join(pal[i:i + 2]) for i in range(len(pal) - 1)]:
+            for p in produtos(q):
+                for l in LINK_CAD.findall(pagina(p["url"].split("?")[0])):
+                    if l not in links: links.append(l)
+    for pg in list(_paginas.values()):                                    # paginas ja lidas por outras buscas
+        for l in LINK_CAD.findall(pg):
+            if l not in links and descricao(nome_arquivo(l)) == desc: links.append(l)
+    exato = [l for l in links if nome_arquivo(l).lower() == arquivo.lower()]
+    if exato: return exato[0], "igual"
+    mesma = [l for l in links if len(desc) >= 8 and descricao(nome_arquivo(l)) == desc]
+    if len(mesma) == 1: return mesma[0], "descricao"
+    if codigo:
         mesmo = [l for l in links if nome_arquivo(l).lower().startswith(codigo + " ")]
-        if len(mesmo) == 1: return mesmo[0]
-    return None
+        if len(mesmo) == 1: return mesmo[0], "codigo"
+    return None, None
 
 
 if __name__ == "__main__":
@@ -50,9 +78,10 @@ if __name__ == "__main__":
             l = html.unescape(l)
             if "cdn.andymark.com" in l and re.search(r"\.(step|stp)$", l.split("?")[0], re.I): velhos[l] = nome_arquivo(l)
     print(len(velhos), "links antigos")
-    with cf.ThreadPoolExecutor(4) as ex: novos = list(ex.map(acha, velhos.values()))
-    mapa = {l: urllib.parse.quote(n, safe=":/%") for l, n in zip(velhos, novos) if n}   # espacos viram %20
+    with cf.ThreadPoolExecutor(4) as ex: achados = list(ex.map(acha, velhos.values()))
+    mapa = {l: urllib.parse.quote(n, safe=":/%") for l, (n, _) in zip(velhos, achados) if n}   # espacos viram %20
     json.dump(mapa, open(os.path.join(AQUI, "andymark_links.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=0)
     print(len(mapa), "achados;", len(velhos) - len(mapa), "sem link novo")
-    for l, a in velhos.items():
-        if l not in mapa: print("  sem link novo:", a)
+    for (l, a), (n, como) in zip(velhos.items(), achados):
+        if como in ("descricao", "codigo"): print("  conferir (%s):" % como, a, "->", nome_arquivo(n))
+        if not n: print("  sem link novo:", a)
