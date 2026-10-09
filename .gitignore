@@ -1,0 +1,9 @@
+*.novo
+*.velho
+*.part
+config.json
+extras.js
+baixadas.js
+atualizacao.log
+falhas.txt
+__pycache__/
