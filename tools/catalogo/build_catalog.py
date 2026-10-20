@@ -1,5 +1,5 @@
 """Gera catalogo.html: foto + nome + caminho de cada STEP, com busca e filtros."""
-import json, os, re, html, gzip
+import json, os, re, html, gzip, urllib.parse
 os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), "dados"))
 
 man = json.load(open("manifesto_full.json"))          # d (relativo a FTC_CAD), u, c, s
@@ -11,6 +11,8 @@ for pg in pages:
     for l in pg["links"]:
         by_link[l.replace("/content/cad/#", "/content/cad/")] = pg
 
+def _ukq(u):
+    return re.sub(r"\.(step|stp|zip)", "", urllib.parse.unquote(u.split("?")[0].split("#")[0].rstrip("/").rsplit("/", 1)[-1]), flags=re.I).upper()
 EXCL = re.compile(r"kit|bundle|starter|chassis|platform|resource guide|everybot|strafer|starter bot|robot-in", re.I)
 # ---- stemOS: indice por URL do STEP e por codigo da peca ----
 _st = json.load(gzip.open("stemos.json.gz", "rt", encoding="utf-8"))
@@ -23,6 +25,15 @@ for _x in _st:
         if re.search(r"/content/(cad|step_files)/", _l): _byurl.setdefault(_ukey(_l), _x)
     _txt = _x["name"] + " " + _x["sku"]
     for _c in {m.upper() for m in _CODE.findall(_txt)}: _bycode.setdefault(_c, _x)
+# pecas que a stemOS vende (fora da categoria Kits) entram mesmo que o STEP esteja numa pasta de "Starter Bot"/"Everybot"/"kit" da REV:
+# o filtro EXCL e para tirar robos e kits inteiros, nao as pecas soltas que moram dentro deles
+_alinks = json.load(open("andymark_links.json", encoding="utf-8"))
+_liberados = set()
+for _x in _st:
+    if any(c["name"] == "Kits" for c in _x["categories"]): continue
+    for _l in set(re.findall(r'href=\\?"([^"\\]+)"', _x["description"])):
+        _l = html.unescape(_l); _l = _alinks.get(_l, _l)
+        if re.search(r"\.(step|stp|zip)$", _l.split("?")[0], re.I): _liberados.add(_ukq(_l))
 def _loja(e, name):
     x = _byurl.get(_ukey(e["u"]))
     if not x:
@@ -35,7 +46,7 @@ rows = []
 man_ok = []        # entradas do manifesto que viram pecas do catalogo (vai para ../../../manifesto.json)
 excl = 0
 for e in man:
-    if EXCL.search(e["d"]):
+    if EXCL.search(e["d"]) and _ukq(e["u"]) not in _liberados:
         excl += 1
         continue
     man_ok.append(e)

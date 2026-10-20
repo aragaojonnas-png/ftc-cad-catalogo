@@ -1,6 +1,6 @@
 """Acha pecas que a stemOS vende (dados/stemos.json.gz) com arquivo STEP e que ainda nao estao no manifesto,
 confere cada link (baixa, abre zip e zip dentro de zip, olha o cabecalho STEP) e grava dados/stemos_extras.json
-com as entradas novas (manifesto + dados do cartao). Kits ficam de fora. Precisa de internet.
+com as entradas novas (manifesto + dados do cartao). Kits de verdade (categoria Kits da stemOS) ficam de fora. Precisa de internet.
 Uso: python3 adicionar_stemos.py [pasta_temporaria]"""
 import gzip, html, io, json, os, re, sys, tempfile, urllib.parse, urllib.request, zipfile, concurrent.futures as cf
 from collections import defaultdict
@@ -10,6 +10,12 @@ TMP = sys.argv[1] if len(sys.argv) > 1 else tempfile.gettempdir()
 EXCL = re.compile(r"kit|bundle|starter|chassis|platform|resource guide|everybot|strafer|starter bot|robot-in", re.I)  # igual ao build_catalog.py
 UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"}
 MAX_STEPS_ZIP = 8   # zip com mais STEP que isso e uma biblioteca, nao uma peca: nao entra
+
+def github_raw(u):
+    """github.com/<dono>/<repo>/raw/<ref>/<caminho> (e blob/...?raw=true) -> raw.githubusercontent.com: o primeiro e recusado (403) por alguns proxies"""
+    m = re.match(r"https://github\.com/([^/]+)/([^/]+)/(?:raw|blob)/(?:refs/heads/)?([^/]+)/([^?]+)", u)
+    return "https://raw.githubusercontent.com/%s/%s/%s/%s" % m.groups() if m and ("/raw/" in u or "raw=true" in u) else u
+
 
 def ukey(u):
     return re.sub(r"\.(step|stp|zip)", "", urllib.parse.unquote(u.split("?")[0].split("#")[0].rstrip("/").rsplit("/", 1)[-1]), flags=re.I).upper()
@@ -97,9 +103,9 @@ if __name__ == "__main__":
     ja = {ukey(e["u"]) for e in man}
     cand = defaultdict(list)
     for s in st:
-        if any(c["name"] == "Kits" for c in s["categories"]) or EXCL.search(html.unescape(s["name"])): continue
+        if any(c["name"] == "Kits" for c in s["categories"]): continue      # so kit de verdade (categoria Kits); "kit com 4" e pacote de uma peca e entra
         for l in set(re.findall(r'href=\\?"([^"\\]+)"', s["description"])):
-            l = novos_links.get(html.unescape(l), html.unescape(l))
+            l = github_raw(novos_links.get(html.unescape(l), html.unescape(l)))
             if re.search(r"\.(step|stp|zip)$", l.split("?")[0], re.I) and ukey(l) not in ja: cand[l].append(s)
     print(len(cand), "links para conferir")
     with cf.ThreadPoolExecutor(8) as ex: res = dict(ex.map(confere, sorted(cand)))

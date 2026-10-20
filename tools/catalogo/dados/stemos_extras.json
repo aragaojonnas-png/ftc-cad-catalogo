@@ -135,6 +135,91 @@
 "tags": []
 },
 {
+"d": "CTR Electronics/Elétrica e Eletrônica (FRC)/CANdi CAD.step",
+"u": "https://raw.githubusercontent.com/CrossTheRoadElec/Device-CADs/master/CANDI_CAD/CAD_FOR_CANDI_DEVICE.zip",
+"c": [
+"CANdi CAD.STEP"
+],
+"s": 7638760,
+"i": "https://stemos.com.br/wp-content/uploads/2024/12/CANdi_Angled.webp",
+"t": "CANdi",
+"w": "https://stemos.com.br/produto/11048300/",
+"f": 1,
+"m": "CTR Electronics",
+"cat": "Elétrica e Eletrônica (FRC)",
+"tags": [
+"Cross the Road Electronics"
+]
+},
+{
+"d": "CTR Electronics/Sistema de Controle (FRC)/CANdle - Controlador de LED CANdle.step",
+"u": "https://raw.githubusercontent.com/CrossTheRoadElec/Device-CADs/master/CANDLE_CAD/CANdle.zip",
+"c": [
+"CANdle.STEP"
+],
+"s": 982722,
+"i": "https://stemos.com.br/wp-content/uploads/2026/06/WCP-1523_2048x2048.webp",
+"t": "Controlador de LED CANdle",
+"w": "https://stemos.com.br/produto/11057400/",
+"f": 1,
+"m": "CTR Electronics",
+"cat": "Sistema de Controle (FRC)",
+"tags": [
+"Cross the Road Electronics"
+]
+},
+{
+"d": "CTR Electronics/Sensores (FRC)/CANivore - CANivore.step",
+"u": "https://raw.githubusercontent.com/CrossTheRoadElec/Device-CADs/master/CANIVORE_CAD/CANivore.zip",
+"c": [
+"CANivore.STEP"
+],
+"s": 842812,
+"i": "https://stemos.com.br/wp-content/uploads/2023/05/CANivore_robotics-USB-to-CAN-FD-hub-robot-automation-robotics-device-top-e1775071326637.webp",
+"t": "CANivore",
+"w": "https://stemos.com.br/produto/11024890/",
+"f": 1,
+"m": "CTR Electronics",
+"cat": "Sensores (FRC)",
+"tags": [
+"Cross the Road Electronics"
+]
+},
+{
+"d": "CTR Electronics/Motores (FRC)/Minion - Motor Minion CTR.step",
+"u": "https://raw.githubusercontent.com/CrossTheRoadElec/Device-CADs/master/MINION_CAD/Minion%20CAD.zip",
+"c": [
+"Minion.STEP"
+],
+"s": 2985858,
+"i": "https://stemos.com.br/wp-content/uploads/2024/12/CTRE_Minion_brushless_motor_1.webp",
+"t": "Motor Minion CTR",
+"w": "https://stemos.com.br/produto/11048400/",
+"f": 1,
+"m": "CTR Electronics",
+"cat": "Motores (FRC)",
+"tags": [
+"Cross the Road Electronics"
+]
+},
+{
+"d": "CTR Electronics/Elétrica e Eletrônica (FRC)/Talon FXS.step",
+"u": "https://raw.githubusercontent.com/CrossTheRoadElec/Device-CADs/master/Talon_FXS_CAD/Talon%20FXS%20CAD.zip",
+"c": [
+"Talon FXS.STEP"
+],
+"s": 42004403,
+"i": "https://stemos.com.br/wp-content/uploads/2024/11/Talon_FXS_3_for_Shopify_2.webp",
+"t": "Talon FXS",
+"w": "https://stemos.com.br/produto/11048200/",
+"f": 1,
+"m": "CTR Electronics",
+"cat": "Elétrica e Eletrônica (FRC)",
+"tags": [
+"Cross the Road Electronics"
+]
+},
+{
 "d": "REV/Rodas (FRC)/Traction_Wheel-4in-MAXSpline - Roda de tração ION, diâmetro 4″, eixo MAXSpline.step",
 "u": "https://revrobotics.com/content/cad/Traction_Wheel-4in-MAXSpline.STEP",
 "c": [],
@@ -2099,6 +2184,19 @@
 ]
 },
 {
+"d": "AndyMark/Fixação (FRC)/am-1526 500Hex HD Collar Clamp.step",
+"u": "https://s3.amazonaws.com/docusync-files/e9290e0aae93fd773eb9c44572a64845ebd2e5f339b2c33e8ae73538a24dd7d4/am-1526%20500Hex%20HD%20Collar%20Clamp.STEP",
+"c": [],
+"s": 208464,
+"i": "https://stemos.com.br/wp-content/uploads/2021/03/shaft-collars.jpg",
+"t": "Kit de 6 Aneis de Fixação para Eixo Hex 0,5″",
+"w": "https://stemos.com.br/produto/11009101/",
+"f": 1,
+"m": "AndyMark",
+"cat": "Fixação (FRC)",
+"tags": []
+},
+{
 "d": "AndyMark/Transmissão (FRC)/am-4789 10T 35 Chain 500in Hex Symmetrical.step",
 "u": "https://s3.amazonaws.com/docusync-files/eab967d7a7e3e38e2dd27e13178d46b499c0313abf550fd2c8b1a6014151e35f/am-4789%2010T%2035%20Chain%20500in%20Hex%20Symmetrical.STEP",
 "c": [],
@@ -2356,6 +2454,51 @@
 ]
 },
 {
+"d": "WCP/Gussets e Brackets (FRC)/WCP-0104 - Placa de retenção em extremidades para Rolamento de 0,875″, kit com 2.step",
+"u": "https://wcproducts.info/files/frc/cad/WCP-0104.step",
+"c": [],
+"s": 40962,
+"i": "https://stemos.com.br/wp-content/uploads/2024/07/WCP-0104.jpg",
+"t": "Placa de retenção em extremidades para Rolamento de 0,875″, kit com 2",
+"w": "https://stemos.com.br/produto/11044203/",
+"f": 1,
+"m": "WCP",
+"cat": "Gussets e Brackets (FRC)",
+"tags": [
+"West Coast Products"
+]
+},
+{
+"d": "WCP/Gussets e Brackets (FRC)/WCP-0105 - Placa de retenção central para rolamento de 0,875″, kit com 2.step",
+"u": "https://wcproducts.info/files/frc/cad/WCP-0105.step",
+"c": [],
+"s": 50948,
+"i": "https://stemos.com.br/wp-content/uploads/2024/07/WCP-0105.jpg",
+"t": "Placa de retenção central para rolamento de 0,875″, kit com 2",
+"w": "https://stemos.com.br/produto/11044204/",
+"f": 1,
+"m": "WCP",
+"cat": "Gussets e Brackets (FRC)",
+"tags": [
+"West Coast Products"
+]
+},
+{
+"d": "WCP/Fixação (FRC)/WCP-0106 - Parafuso com Ombro Redondo 0,375″ x 0,3125″ Comprimento, kit com 2.step",
+"u": "https://wcproducts.info/files/frc/cad/WCP-0106.step",
+"c": [],
+"s": 355589,
+"i": "https://stemos.com.br/wp-content/uploads/2024/07/wcp40.jpg",
+"t": "Parafuso com Ombro Redondo 0,375″ x 0,3125″ Comprimento, kit com 2",
+"w": "https://stemos.com.br/produto/11046600/",
+"f": 1,
+"m": "WCP",
+"cat": "Fixação (FRC)",
+"tags": [
+"West Coast Products"
+]
+},
+{
 "d": "WCP/Transmissão (FRC)/WCP-0171 - Engrenagem Cilíndrica de Alumínio 66 dentes (20 DP, Eixo Hexagonal de 0,5″).step",
 "u": "https://wcproducts.info/files/frc/cad/WCP-0171.step",
 "c": [],
@@ -2581,6 +2724,36 @@
 ]
 },
 {
+"d": "WCP/Eixos (FRC)/WCP-0217 - Espaçadores de Alumínio 0,196″ DI x 0,375″ DE x 0,75″ Largura, kit com 5.step",
+"u": "https://wcproducts.info/files/frc/cad/WCP-0217.step",
+"c": [],
+"s": 17085,
+"i": "https://stemos.com.br/wp-content/uploads/2024/07/WCP-0217.webp",
+"t": "Espaçadores de Alumínio 0,196″ DI x 0,375″ DE x 0,75″ Largura, kit com 5",
+"w": "https://stemos.com.br/produto/11045703/",
+"f": 1,
+"m": "WCP",
+"cat": "Eixos (FRC)",
+"tags": [
+"West Coast Products"
+]
+},
+{
+"d": "WCP/Espaçadores (FRC)/WCP-0222 - Espaçadores de Alumínio, 0,196″ DI x 0,375″ DE x 1,25″ Largura, kit com 5.step",
+"u": "https://wcproducts.info/files/frc/cad/WCP-0222.step",
+"c": [],
+"s": 17075,
+"i": "https://stemos.com.br/wp-content/uploads/2024/07/wcp56.jpg",
+"t": "Espaçadores de Alumínio, 0,196″ DI x 0,375″ DE x 1,25″ Largura, kit com 5",
+"w": "https://stemos.com.br/produto/11045701/",
+"f": 1,
+"m": "WCP",
+"cat": "Espaçadores (FRC)",
+"tags": [
+"West Coast Products"
+]
+},
+{
 "d": "WCP/Caixas de Redução (FRC)/WCP-0225-Rotation SS Gearbox (2 Stages).step",
 "u": "https://wcproducts.info/files/frc/cad/WCP-0225-Rotation%20SS%20Gearbox%20(2%20Stages).step",
 "c": [],
@@ -2606,6 +2779,36 @@
 "f": 1,
 "m": "WCP",
 "cat": "Caixas de Redução (FRC)",
+"tags": [
+"West Coast Products"
+]
+},
+{
+"d": "WCP/Espaçadores (FRC)/WCP-0226 - Espaçadores de Alumínio, 0,196″ DI x 0,375″ DE x 1,125″ Largura, kit com 5.step",
+"u": "https://wcproducts.info/files/frc/cad/WCP-0226.step",
+"c": [],
+"s": 17070,
+"i": "https://stemos.com.br/wp-content/uploads/2024/07/wcp58.jpg",
+"t": "Espaçadores de Alumínio, 0,196″ DI x 0,375″ DE x 1,125″ Largura, kit com 5",
+"w": "https://stemos.com.br/produto/11045702/",
+"f": 1,
+"m": "WCP",
+"cat": "Espaçadores (FRC)",
+"tags": [
+"West Coast Products"
+]
+},
+{
+"d": "WCP/Fixação (FRC)/WCP-0273 - Parafuso #10-32 x 2,5″, kit com 25.step",
+"u": "https://wcproducts.info/files/frc/cad/WCP-0273.step",
+"c": [],
+"s": 1973311,
+"i": "https://stemos.com.br/wp-content/uploads/2024/08/wcp3.jpg",
+"t": "Parafuso #10-32 x 2,5″, kit com 25",
+"w": "https://stemos.com.br/produto/11043900/",
+"f": 1,
+"m": "WCP",
+"cat": "Fixação (FRC)",
 "tags": [
 "West Coast Products"
 ]
@@ -2639,6 +2842,34 @@
 "tags": [
 "West Coast Products"
 ]
+},
+{
+"d": "WCP/Gussets e Brackets (FRC)/WCP-0475 - Placa de retenção em extremidades para Rolamento de 1,125″, kit com 2.step",
+"u": "https://wcproducts.info/files/frc/cad/WCP-0475.step",
+"c": [],
+"s": 40731,
+"i": "https://stemos.com.br/wp-content/uploads/2024/07/WCP-0475.jpg",
+"t": "Placa de retenção em extremidades para Rolamento de 1,125″, kit com 2",
+"w": "https://stemos.com.br/produto/11044201/",
+"f": 1,
+"m": "WCP",
+"cat": "Gussets e Brackets (FRC)",
+"tags": [
+"West Coast Products"
+]
+},
+{
+"d": "WCP/Gussets e Brackets (FRC)/WCP-0476 - Placa de retenção central para rolamento de 1,125″, kit com 2.step",
+"u": "https://wcproducts.info/files/frc/cad/WCP-0476.step",
+"c": [],
+"s": 50597,
+"i": "https://stemos.com.br/wp-content/uploads/2024/08/WCP-Product-Launch-Photo-14.png",
+"t": "Placa de retenção central para rolamento de 1,125″, kit com 2",
+"w": "https://stemos.com.br/produto/11044202/",
+"f": 1,
+"m": "WCP",
+"cat": "Gussets e Brackets (FRC)",
+"tags": []
 },
 {
 "d": "WCP/Transmissão (FRC)/WCP-0548 - Engrenagem com alivio de peso de Aço 34 dentes (20 DP, Hexagonal 0,5″).step",
@@ -3738,6 +3969,21 @@
 "f": 1,
 "m": "WCP",
 "cat": "Rolamentos (FRC)",
+"tags": [
+"West Coast Products"
+]
+},
+{
+"d": "WCP/Eixos/WCP-1118 - Adaptador de SplineXS para Hex 0,5″, kit com 2.step",
+"u": "https://wcproducts.info/files/frc/cad/WCP-1118.step",
+"c": [],
+"s": 320156,
+"i": "https://stemos.com.br/wp-content/uploads/2024/08/WCP-1118_2bc0d50a-28dd-4ac9-98a2-28e715aa88a4.webp",
+"t": "Adaptador de SplineXS para Hex 0,5″, kit com 2",
+"w": "https://stemos.com.br/produto/11035600/",
+"f": 0,
+"m": "WCP",
+"cat": "Eixos",
 "tags": [
 "West Coast Products"
 ]
