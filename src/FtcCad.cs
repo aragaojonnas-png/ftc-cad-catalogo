@@ -62,6 +62,15 @@ namespace FtcCad
             c.DropDownStyle = livre ? ComboBoxStyle.DropDown : ComboBoxStyle.DropDownList;
             c.BackColor = Campo; c.ForeColor = Texto; c.FlatStyle = FlatStyle.Flat; pai.Controls.Add(c); return c;
         }
+        public static ListBox Lista(Control pai, int x, int y, int w, int h)
+        {
+            ListBox l = new ListBox(); l.SetBounds(x, y, w, h); l.BackColor = Campo; l.ForeColor = Texto; l.BorderStyle = BorderStyle.FixedSingle;
+            l.SelectionMode = SelectionMode.MultiExtended; l.HorizontalScrollbar = true; pai.Controls.Add(l); return l;
+        }
+        public static CheckBox Marca(Control pai, string txt, int x, int y, int w)
+        {
+            CheckBox c = new CheckBox(); c.Text = txt; c.SetBounds(x, y, w, 22); c.ForeColor = Texto; pai.Controls.Add(c); return c;
+        }
         public static Button Botao_(Control pai, string txt, int x, int y, int w, int h, bool cinza)
         {
             Button b = new Button(); b.Text = txt; b.SetBounds(x, y, w, h); b.FlatStyle = FlatStyle.Flat;
@@ -274,32 +283,15 @@ namespace FtcCad
                 string baseDir = Path.Combine(pasta, "Pecas");
                 if (Directory.Exists(baseDir))
                 {
+                    List<string> origens = new List<string>();
                     foreach (string j in Directory.GetFiles(baseDir, "*.json", SearchOption.AllDirectories))
                     {
-                        try
-                        {
-                            Dictionary<string, object> m = Json.LerObj(j);
-                            string step = j.Substring(0, j.Length - 5);
-                            if (!File.Exists(step)) continue;
-                            string tipo = Json.Str(m, "tipo"); if (tipo == "") tipo = "Outros";
-                            string fab = Json.Str(m, "fab"); if (fab == "") fab = "Outro";
-                            string grupo = Json.Str(m, "grupo").Trim();
-                            string nome = Json.Str(m, "nome"); if (nome == "") nome = Path.GetFileNameWithoutExtension(step);
-                            if (Json.Str(m, "codigo") != "") nome = Json.Str(m, "codigo") + " - " + nome;
-                            string foto = "";
-                            if (Json.Str(m, "foto") != "")
-                            {
-                                string fp = Path.Combine(baseDir, Json.Str(m, "foto"));
-                                if (File.Exists(fp)) { try { foto = new Uri(fp).AbsoluteUri; } catch { } }
-                            }
-                            Dictionary<string, object> e = new Dictionary<string, object>();
-                            e["n"] = nome; e["p"] = "Equipe/" + tipo;
-                            e["s"] = Math.Round(new FileInfo(step).Length / 1048576.0, 1);
-                            e["i"] = foto; e["t"] = nome + " " + fab + " " + grupo + " equipe " + Json.Str(m, "por");
-                            e["u"] = Json.Str(m, "link"); e["f"] = 0; e["m"] = grupo != "" ? grupo : fab; e["gr"] = grupo;
-                            e["v"] = fab; e["g"] = tipo; e["x"] = 1; e["b"] = Json.Str(m, "por"); e["a"] = step;
-                            l.Add(e);
-                        }
+                        if (string.Equals(Path.GetFileName(j), PecaEquipe.NomeJson, StringComparison.OrdinalIgnoreCase)) origens.Add(j);          // formato novo: pasta com peca.json
+                        else if (File.Exists(j.Substring(0, j.Length - 5))) origens.Add(j.Substring(0, j.Length - 5));                                // formato antigo: x.step + x.step.json
+                    }
+                    foreach (string o in origens)
+                    {
+                        try { Dictionary<string, object> e = PecaEquipe.Linha(pasta, o); if (e != null) l.Add(e); }
                         catch { }
                     }
                 }
@@ -387,11 +379,11 @@ namespace FtcCad
 
         public static void ParaLixeira(string p)
         {
-            if (!File.Exists(p)) return;
+            if (!File.Exists(p) && !Directory.Exists(p)) return;
             SHFILEOPSTRUCT op = new SHFILEOPSTRUCT();
             op.wFunc = 3; op.pFrom = p + "\0\0"; op.fFlags = 0x0040 | 0x0010 | 0x0004 | 0x0400; // lixeira, sem perguntar, sem janela, sem erro
             int r = SHFileOperation(ref op);
-            if (r != 0 && File.Exists(p)) File.Delete(p);
+            if (r != 0) { if (File.Exists(p)) File.Delete(p); else if (Directory.Exists(p)) Directory.Delete(p, true); }
         }
 
         [DllImport("user32.dll")] public static extern bool SetProcessDPIAware();
@@ -474,6 +466,240 @@ namespace FtcCad
         }
     }
 
+    // ------------------------------------------------------------------ peca da equipe: uma pasta com varios arquivos de qualquer tipo
+    // Formato novo: Pecas\<Tipo>\<Nome>\peca.json + os arquivos da peca (a lista de arquivos e a propria pasta).
+    // Formato antigo: Pecas\<Tipo>\x.step + x.step.json (peca de um arquivo so); continua funcionando e vira pasta quando for editada.
+    class PecaEquipe
+    {
+        public const string NomeJson = "peca.json";
+        // para a lixeira; os testes trocam por File.Delete
+        public static Action<string> Lixeira = delegate(string p) { Sistema.ParaLixeira(p); };
+
+        public string Pasta, BaseDir, ArqJson, Dir, Step; public bool Legado; public Dictionary<string, object> Meta;
+
+        static string BaseDe(string pasta) { return Path.GetFullPath(Path.Combine(pasta, "Pecas")).TrimEnd('\\', '/'); }
+        static bool Dentro(string baseDir, string full) { return full.StartsWith(baseDir + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase); }
+        static bool Igual(string a, string b) { return string.Equals(Path.GetFullPath(a).TrimEnd('\\', '/'), Path.GetFullPath(b).TrimEnd('\\', '/'), StringComparison.OrdinalIgnoreCase); }
+
+        // origem: o peca.json, a pasta da peca, ou (formato antigo) o .step. Lanca excecao com mensagem clara se nao for uma peca da equipe.
+        public static PecaEquipe Abrir(string pasta, string origem)
+        {
+            string baseDir = BaseDe(pasta);
+            string full = Path.GetFullPath(origem).TrimEnd('\\', '/');
+            if (!Dentro(baseDir, full)) throw new Exception("Esse arquivo não está na pasta da equipe.");
+            PecaEquipe p = new PecaEquipe(); p.Pasta = pasta; p.BaseDir = baseDir;
+            if (Directory.Exists(full)) full = Path.Combine(full, NomeJson);
+            if (string.Equals(Path.GetFileName(full), NomeJson, StringComparison.OrdinalIgnoreCase))
+            {
+                if (!File.Exists(full)) throw new Exception("Não achei a peça (falta o peca.json).");
+                p.ArqJson = full; p.Dir = Path.GetDirectoryName(full); p.Legado = false;
+            }
+            else
+            {
+                if (!File.Exists(full)) throw new Exception("Não achei esse arquivo na pasta da equipe.");
+                if (!File.Exists(full + ".json")) throw new Exception("Esse arquivo não é uma peça adicionada pela equipe (não tem o .json).");
+                p.ArqJson = full + ".json"; p.Step = full; p.Dir = Path.GetDirectoryName(full); p.Legado = true;
+            }
+            p.Meta = Json.LerObj(p.ArqJson);
+            return p;
+        }
+
+        public string Nome { get { string n = Json.Str(Meta, "nome"); if (n != "") return n; return Legado ? Path.GetFileNameWithoutExtension(Step) : Path.GetFileName(Dir); } }
+        public string Codigo { get { return Json.Str(Meta, "codigo"); } }
+        public string Tipo { get { string t = Json.Str(Meta, "tipo"); return t != "" ? t : "Outros"; } }
+        string Ref { get { return Legado ? Step : Dir; } }
+        public string Chave { get { return EstoqueEquipe.Chave(Tipo, Json.Str(Meta, "nome"), Codigo, Ref); } }
+
+        static int Posto(string f) { string e = Path.GetExtension(f).ToLowerInvariant(); return (e == ".step" || e == ".stp") ? 0 : 1; }
+        static bool Ignorado(string n)
+        {
+            return string.Equals(n, NomeJson, StringComparison.OrdinalIgnoreCase) || n.StartsWith(".") || n.StartsWith("~$") || n.EndsWith(".tmp", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(n, "desktop.ini", StringComparison.OrdinalIgnoreCase) || string.Equals(n, "Thumbs.db", StringComparison.OrdinalIgnoreCase);
+        }
+
+        // caminhos completos dos arquivos da peca, STEP primeiro
+        public string[] Arquivos()
+        {
+            if (Legado) return new string[] { Step };
+            List<string> l = new List<string>();
+            foreach (string f in Directory.GetFiles(Dir)) if (!Ignorado(Path.GetFileName(f))) l.Add(f);
+            l.Sort(delegate(string a, string b)
+            {
+                int x = Posto(a), y = Posto(b);
+                return x != y ? x.CompareTo(y) : string.Compare(Path.GetFileName(a), Path.GetFileName(b), StringComparison.OrdinalIgnoreCase);
+            });
+            return l.ToArray();
+        }
+
+        // nome valido para pasta do Windows
+        public static string NomeSeguro(string s)
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (char c in s) sb.Append(c < 32 || "<>:\"/\\|?*".IndexOf(c) >= 0 ? ' ' : c);
+            string r = Regex.Replace(sb.ToString(), @"\s+", " ").Trim(' ', '.');
+            if (r.Length > 80) r = r.Substring(0, 80).Trim(' ', '.');
+            return r == "" ? "peca" : r;
+        }
+
+        static string CopiarFoto(string baseDir, string foto, string raiz)
+        {
+            if (foto == null || foto == "" || !File.Exists(foto)) return "";
+            string dirFotos = Path.Combine(baseDir, "_fotos"); Directory.CreateDirectory(dirFotos);
+            string fn = raiz + Path.GetExtension(foto), dest = Path.Combine(dirFotos, fn);
+            if (!Igual(foto, dest)) File.Copy(foto, dest, true);
+            return "_fotos\\" + fn;
+        }
+
+        public static bool Existe(string pasta, string tipo, string nome)
+        {
+            return File.Exists(Path.Combine(Path.Combine(Path.Combine(BaseDe(pasta), tipo == "" ? "Outros" : tipo), NomeSeguro(nome)), NomeJson));
+        }
+
+        // cria a peca (pasta + arquivos + peca.json) e devolve o caminho do peca.json.
+        // Se a peca ja existe: com anexar=true so acrescenta os arquivos (os dados dela ficam como estao); senao lanca excecao.
+        public static string Criar(string pasta, string nome, string codigo, string fab, string grupo, string tipo, string link, string foto, string[] arquivos, bool anexar, bool substituir, out string aviso)
+        {
+            aviso = ""; if (tipo == "") tipo = "Outros";
+            string baseDir = BaseDe(pasta), raiz = NomeSeguro(nome);
+            string dir = Path.Combine(Path.Combine(baseDir, tipo), raiz), json = Path.Combine(dir, NomeJson);
+            bool existe = File.Exists(json);
+            if (existe && !anexar) throw new Exception("Já existe a peça '" + nome + "' no tipo '" + tipo + "'.");
+            bool dirNovo = !Directory.Exists(dir);
+            Directory.CreateDirectory(dir);
+            List<string> puladas = new List<string>(); int copiados = 0;
+            foreach (string arq in arquivos)
+            {
+                string n = Path.GetFileName(arq);
+                if (Ignorado(n)) { puladas.Add(n + " (nome reservado)"); continue; }
+                string dest = Path.Combine(dir, n);
+                if (File.Exists(dest) && !substituir) { puladas.Add(n); continue; }
+                File.Copy(arq, dest, true); copiados++;
+            }
+            if (!existe)
+            {
+                bool temArq = false; foreach (string f in Directory.GetFiles(dir)) if (!Ignorado(Path.GetFileName(f))) temArq = true;
+                if (!temArq) { if (dirNovo) { try { Directory.Delete(dir, true); } catch { } } throw new Exception("Nenhum arquivo foi copiado."); }
+                Dictionary<string, object> meta = new Dictionary<string, object>();
+                meta["nome"] = nome; meta["codigo"] = codigo; meta["fab"] = fab; meta["grupo"] = grupo; meta["tipo"] = tipo; meta["link"] = link;
+                meta["foto"] = CopiarFoto(baseDir, foto, raiz);
+                meta["por"] = Environment.UserName; meta["data"] = DateTime.Now.ToString("yyyy-MM-dd");
+                File.WriteAllText(json, Json.S().Serialize(meta), new UTF8Encoding(true));
+            }
+            if (puladas.Count > 0) aviso = "Não copiados: " + string.Join(", ", puladas.ToArray());
+            return json;
+        }
+
+        // aplica a edicao (dados, arquivos a acrescentar/retirar, foto, tipo). Peca do formato antigo vira pasta. Leva a marcacao de estoque junto.
+        // devolve o caminho do peca.json; lanca excecao com mensagem clara (e sem deixar a peca pela metade) se nao der.
+        public string Aplicar(string nome, string codigo, string fab, string grupo, string tipo, string link, string fotoNova, bool tirarFoto, string[] adicionar, string[] remover, out string aviso)
+        {
+            aviso = ""; if (tipo == "") tipo = "Outros";
+            string tipoAntigo = Tipo, chaveAntiga = Chave;
+            List<string> retirar = new List<string>();      // caminhos atuais que vao para a lixeira
+            foreach (string a in Arquivos())
+                foreach (string r in remover) if (string.Equals(Path.GetFileName(a), r, StringComparison.OrdinalIgnoreCase)) { retirar.Add(a); break; }
+            List<string> novos = new List<string>();
+            foreach (string a in adicionar)
+            {
+                if (!File.Exists(a)) throw new Exception("Não achei o arquivo " + a);
+                if (Ignorado(Path.GetFileName(a))) throw new Exception("O arquivo '" + Path.GetFileName(a) + "' tem nome reservado e não pode entrar na peça.");
+                novos.Add(a);
+            }
+            int ficam = Arquivos().Length - retirar.Count + novos.Count;
+            if (ficam <= 0) throw new Exception("A peça precisa ter pelo menos um arquivo.");
+
+            string nomePasta = Legado ? NomeSeguro(nome) : Path.GetFileName(Dir);
+            string dirNovo = Dir; bool mover = Legado || !string.Equals(tipo, tipoAntigo, StringComparison.Ordinal);
+            if (mover)
+            {
+                dirNovo = Path.Combine(Path.Combine(BaseDir, tipo), nomePasta);
+                if (Directory.Exists(dirNovo) && !Igual(dirNovo, Dir)) throw new Exception("Já existe uma peça '" + nomePasta + "' no tipo '" + tipo + "'. Nada foi alterado.");
+            }
+
+            if (Legado)
+            {
+                Directory.CreateDirectory(dirNovo);
+                string novoStep = Path.Combine(dirNovo, Path.GetFileName(Step)), novoJson = Path.Combine(dirNovo, NomeJson);
+                try { File.Move(Step, novoStep); File.Move(ArqJson, novoJson); }
+                catch { if (File.Exists(novoStep) && !File.Exists(Step)) File.Move(novoStep, Step); throw; }
+                for (int i = 0; i < retirar.Count; i++) if (Igual(retirar[i], Step)) retirar[i] = novoStep;
+                Step = null; Legado = false; Dir = dirNovo; ArqJson = novoJson;
+            }
+            else if (mover)
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(dirNovo));
+                string velho = Dir; Directory.Move(velho, dirNovo);
+                for (int i = 0; i < retirar.Count; i++) retirar[i] = Path.Combine(dirNovo, Path.GetFileName(retirar[i]));
+                Dir = dirNovo; ArqJson = Path.Combine(dirNovo, NomeJson);
+            }
+
+            foreach (string r in retirar) if (File.Exists(r)) Lixeira(r);
+            foreach (string a in novos) File.Copy(a, Path.Combine(Dir, Path.GetFileName(a)), true);
+
+            string foto = Json.Str(Meta, "foto"), velha = foto != "" ? Path.Combine(BaseDir, foto) : "";
+            if (fotoNova != null && fotoNova != "")
+            {
+                string nova = CopiarFoto(BaseDir, fotoNova, nomePasta);
+                if (velha != "" && File.Exists(velha) && !Igual(velha, Path.Combine(BaseDir, nova))) Lixeira(velha);
+                foto = nova;
+            }
+            else if (tirarFoto) { if (velha != "" && File.Exists(velha)) Lixeira(velha); foto = ""; }
+
+            Meta["nome"] = nome; Meta["codigo"] = codigo; Meta["fab"] = fab; Meta["grupo"] = grupo; Meta["tipo"] = tipo; Meta["link"] = link; Meta["foto"] = foto;
+            File.WriteAllText(ArqJson, Json.S().Serialize(Meta), new UTF8Encoding(true));
+
+            string chaveNova = EstoqueEquipe.Chave(tipo, nome, codigo, Ref);
+            if (chaveNova != chaveAntiga)
+                try { EstoqueEquipe.Mover(Pasta, chaveAntiga, chaveNova); }
+                catch { aviso = "A marcação de estoque desta peça não pôde ser levada para o novo nome (estoque.json ilegível agora). Marque de novo se precisar."; }
+            return ArqJson;
+        }
+
+        // peca inteira (e a foto) para a lixeira
+        public void Remover()
+        {
+            string foto = Json.Str(Meta, "foto");
+            if (Legado) { Lixeira(Step); Lixeira(ArqJson); } else Lixeira(Dir);
+            if (foto != "") { string fp = Path.Combine(BaseDir, foto); if (File.Exists(fp)) Lixeira(fp); }
+        }
+
+        // linha da peca para o catalogo (extras.js); null se a pasta ainda nao tem arquivos (Drive sincronizando)
+        public static Dictionary<string, object> Linha(string pasta, string origem)
+        {
+            PecaEquipe p = Abrir(pasta, origem);
+            string[] arqs = p.Arquivos();
+            if (arqs.Length == 0) return null;
+            string tipo = p.Tipo;
+            string fab = Json.Str(p.Meta, "fab"); if (fab == "") fab = "Outro";
+            string grupo = Json.Str(p.Meta, "grupo").Trim();
+            string nome = p.Nome; if (p.Codigo != "") nome = p.Codigo + " - " + nome;
+            string foto = "";
+            if (Json.Str(p.Meta, "foto") != "")
+            {
+                string fp = Path.Combine(p.BaseDir, Json.Str(p.Meta, "foto"));
+                if (File.Exists(fp)) { try { foto = new Uri(fp).AbsoluteUri; } catch { } }
+            }
+            List<object> fs = new List<object>(); List<object> exts = new List<object>(); double total = 0; StringBuilder nomes = new StringBuilder();
+            foreach (string a in arqs)
+            {
+                long len = new FileInfo(a).Length; total += len;
+                string ext = Path.GetExtension(a).TrimStart('.').ToUpperInvariant(); if (ext == "STP") ext = "STEP";
+                if (ext != "" && !exts.Contains(ext)) exts.Add(ext);
+                Dictionary<string, object> fi = new Dictionary<string, object>();
+                fi["n"] = Path.GetFileName(a); fi["e"] = ext; fi["s"] = Math.Round(len / 1048576.0, 2); fi["a"] = a;
+                fs.Add(fi); nomes.Append(' ').Append(Path.GetFileName(a));
+            }
+            Dictionary<string, object> e = new Dictionary<string, object>();
+            e["n"] = nome; e["p"] = "Equipe/" + tipo;
+            e["s"] = Math.Round(total / 1048576.0, 1);
+            e["i"] = foto; e["t"] = nome + " " + fab + " " + grupo + " equipe " + Json.Str(p.Meta, "por") + nomes.ToString();
+            e["u"] = Json.Str(p.Meta, "link"); e["f"] = 0; e["m"] = grupo != "" ? grupo : fab; e["gr"] = grupo;
+            e["v"] = fab; e["g"] = tipo; e["x"] = 1; e["b"] = Json.Str(p.Meta, "por");
+            e["a"] = arqs[0]; e["o"] = p.Legado ? p.Step : p.ArqJson; e["fs"] = fs; e["ex"] = exts;
+            return e;
+        }
+    }
+
     // ------------------------------------------------------------------ remover peca da equipe
     static class Remover
     {
@@ -482,20 +708,277 @@ namespace FtcCad
             string titulo = "Remover peça - FTC_CAD";
             string pasta = Cfg.PastaEquipe();
             if (pasta == null) { Tema.Msg("A pasta da equipe não está configurada.", titulo, MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
-            string baseDir = Path.GetFullPath(Path.Combine(pasta, "Pecas")).TrimEnd('\\', '/');
-            string full = Path.GetFullPath(arquivo);
-            if (!full.StartsWith(baseDir + "\\", StringComparison.OrdinalIgnoreCase)) { Tema.Msg("Esse arquivo não está na pasta da equipe.", titulo, MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
-            if (!full.EndsWith(".step", StringComparison.OrdinalIgnoreCase)) { Tema.Msg("Esse não é um arquivo .step.", titulo, MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
-            string json = full + ".json";
-            if (!File.Exists(json)) { Tema.Msg("Esse arquivo não é uma peça adicionada pela equipe (não tem o .json).", titulo, MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
-            Dictionary<string, object> m = Json.LerObj(json);
-            string nome = Json.Str(m, "nome"); if (nome == "") nome = Path.GetFileNameWithoutExtension(full);
-            if (Tema.Msg("Remover a peça '" + nome + "'?\r\n\r\nO arquivo vai para a Lixeira e some do catálogo de toda a equipe quando o Google Drive sincronizar.",
+            PecaEquipe p;
+            try { p = PecaEquipe.Abrir(pasta, arquivo); }
+            catch (Exception ex) { Tema.Msg(ex.Message, titulo, MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
+            int n = p.Arquivos().Length;
+            if (Tema.Msg("Remover a peça '" + p.Nome + "'" + (n > 1 ? " e seus " + n + " arquivos" : "") + "?\r\n\r\n" + (n > 1 ? "A pasta" : "O arquivo") + " vai para a Lixeira e some do catálogo de toda a equipe quando o Google Drive sincronizar.",
                 titulo, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes) return;
-            Sistema.ParaLixeira(full); Sistema.ParaLixeira(json);
-            if (Json.Str(m, "foto") != "") Sistema.ParaLixeira(Path.Combine(baseDir, Json.Str(m, "foto")));
-            Listas.Extras();
+            p.Remover();
+            Listas.Extras(); try { Listas.Estoque(); } catch { }
             Tema.Msg("Peça removida. O catálogo se atualiza sozinho ao voltar para a janela dele (ou aperte F5).", titulo, MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+    }
+
+    // item da lista de arquivos nas janelas de adicionar/editar
+    class ArqItem
+    {
+        public string Nome, Caminho; public bool Novo; public long Bytes;
+        public ArqItem(string caminho, bool novo) { Caminho = caminho; Nome = Path.GetFileName(caminho); Novo = novo; try { Bytes = new FileInfo(caminho).Length; } catch { } }
+        public override string ToString() { return Nome + "   (" + (Bytes >= 1048576 ? (Bytes / 1048576.0).ToString("0.0") + " MB" : Math.Max(1, Bytes / 1024) + " KB") + ")" + (Novo ? "   [novo]" : ""); }
+    }
+
+    static class FiltrosArquivo
+    {
+        public const string Todos = "Todos os arquivos (*.*)|*.*|Modelos STEP (*.step;*.stp)|*.step;*.stp|Fusion e outros CAD (*.f3d;*.f3z;*.iges;*.igs;*.sldprt;*.sldasm;*.ipt;*.iam;*.dwg;*.dxf)|*.f3d;*.f3z;*.iges;*.igs;*.sldprt;*.sldasm;*.ipt;*.iam;*.dwg;*.dxf|Malhas 3D (*.stl;*.obj;*.3mf)|*.stl;*.obj;*.3mf|Desenhos e imagens (*.pdf;*.png;*.jpg;*.jpeg)|*.pdf;*.png;*.jpg;*.jpeg";
+    }
+
+    // ------------------------------------------------------------------ adicionar peca da equipe
+    static class Adicionar
+    {
+        public static readonly string[] Tipos = new string[] {
+            "Colares e acopladores", "Correias e polias", "Correntes e coroas", "Cubos", "Dobradiças e molas", "Eixos e tubos", "Eletrônica", "Engrenagens",
+            "Espaçadores e arruelas", "Esteiras", "Ferramentas", "Guias, slides e articulações", "Motores e caixas de redução", "Parafusos", "Placas e painéis", "Porcas",
+            "Rodas e pneus", "Rolamentos", "Servos", "Suportes e bases", "Vigas e perfis", "Outros" };
+
+        public static void Rodar()
+        {
+            string titulo = "Adicionar peça - FTC_CAD";
+            string pasta = Cfg.PastaEquipe();
+            if (pasta == null) pasta = Cfg.PedirPastaEquipe(titulo);
+            if (pasta == null) return;
+            string pastaEq = pasta;
+            Form f = Tema.Janela(titulo, 560, 580);
+            Tema.Rotulo(f, "Arquivos da peça (qualquer tipo: STEP, F3D, STL, PDF...)", 20, 12, 520, 20);
+            ListBox lst = Tema.Lista(f, 20, 34, 400, 88);
+            Button btnArq = Tema.Botao_(f, "Adicionar...", 430, 34, 110, 28, false);
+            Button btnTirar = Tema.Botao_(f, "Tirar", 430, 68, 110, 28, true);
+            CheckBox chkSep = Tema.Marca(f, "Criar uma peça para cada arquivo (em vez de uma peça com todos)", 20, 128, 520); chkSep.Visible = false;
+            Tema.Rotulo(f, "Nome da peça", 20, 158, 520, 20);
+            TextBox txtNome = Tema.Caixa(f, 20, 180, 520);
+            Tema.Rotulo(f, "Código (opcional, ex.: 2101-0006-0001)", 20, 216, 520, 20);
+            TextBox txtCod = Tema.Caixa(f, 20, 238, 520);
+            Tema.Rotulo(f, "Fabricante", 20, 274, 250, 20);
+            ComboBox cmbFab = Tema.Combo(f, 20, 296, 250, true); cmbFab.Items.AddRange(new object[] { "goBILDA", "REV", "AndyMark", "Outro" }); cmbFab.Text = "Outro";
+            Tema.Rotulo(f, "Tipo de peça", 290, 274, 250, 20);
+            ComboBox cmbTipo = Tema.Combo(f, 290, 296, 250, false); cmbTipo.Items.AddRange(Tipos); cmbTipo.SelectedItem = "Outros";
+            Tema.Rotulo(f, "Grupo (opcional): aparece junto dos fabricantes e como etiqueta", 20, 332, 520, 20);
+            ComboBox cmbGrupo = Tema.Combo(f, 20, 354, 520, true);
+            try { foreach (string g in Listas.Grupos(pastaEq)) cmbGrupo.Items.Add(g); } catch { }
+            Tema.Rotulo(f, "Link da página do produto (opcional)", 20, 390, 520, 20);
+            TextBox txtLink = Tema.Caixa(f, 20, 412, 520);
+            Tema.Rotulo(f, "Foto da peça (opcional, .jpg ou .png)", 20, 448, 520, 20);
+            TextBox txtFoto = Tema.Caixa(f, 20, 470, 400); txtFoto.ReadOnly = true;
+            Button btnFoto = Tema.Botao_(f, "Procurar...", 430, 469, 110, 28, false);
+            Label lp = Tema.Rotulo(f, "Pasta da equipe: " + pastaEq, 20, 508, 520, 20); lp.ForeColor = Tema.Suave;
+            Button ok = Tema.Botao_(f, "Adicionar", 300, 538, 120, 30, false);
+            Button cancel = Tema.Botao_(f, "Cancelar", 430, 538, 110, 30, true);
+            cancel.Click += delegate { f.Close(); };
+
+            Action atualizar = delegate
+            {
+                chkSep.Visible = lst.Items.Count > 1;
+                bool sep = chkSep.Visible && chkSep.Checked;
+                txtNome.Enabled = txtCod.Enabled = txtFoto.Enabled = btnFoto.Enabled = !sep;
+                if (lst.Items.Count == 1 && txtNome.Text == "") txtNome.Text = Path.GetFileNameWithoutExtension(((ArqItem)lst.Items[0]).Nome);
+            };
+            chkSep.CheckedChanged += delegate { atualizar(); };
+            btnArq.Click += delegate
+            {
+                using (OpenFileDialog d = new OpenFileDialog())
+                {
+                    d.Filter = FiltrosArquivo.Todos; d.Multiselect = true;
+                    if (d.ShowDialog() != DialogResult.OK) return;
+                    foreach (string a in d.FileNames)
+                    {
+                        bool ja = false; foreach (object o in lst.Items) if (string.Equals(((ArqItem)o).Nome, Path.GetFileName(a), StringComparison.OrdinalIgnoreCase)) ja = true;
+                        if (!ja) lst.Items.Add(new ArqItem(a, true));
+                    }
+                    atualizar();
+                }
+            };
+            btnTirar.Click += delegate
+            {
+                for (int i = lst.SelectedIndices.Count - 1; i >= 0; i--) lst.Items.RemoveAt(lst.SelectedIndices[i]);
+                atualizar();
+            };
+            btnFoto.Click += delegate
+            {
+                using (OpenFileDialog d = new OpenFileDialog()) { d.Filter = "Imagens (*.jpg;*.jpeg;*.png)|*.jpg;*.jpeg;*.png"; if (d.ShowDialog() == DialogResult.OK) txtFoto.Text = d.FileName; }
+            };
+            ok.Click += delegate
+            {
+                if (lst.Items.Count == 0) { Tema.Msg("Escolha pelo menos um arquivo.", titulo, MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
+                bool sep = chkSep.Visible && chkSep.Checked;
+                if (!sep && txtNome.Text.Trim() == "") { Tema.Msg("Digite o nome da peça.", titulo, MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
+                string tipo = Convert.ToString(cmbTipo.SelectedItem);
+                List<string> arqs = new List<string>(); foreach (object o in lst.Items) arqs.Add(((ArqItem)o).Caminho);
+                int feitas = 0; List<string> avisos = new List<string>();
+                try
+                {
+                    if (sep)
+                    {
+                        foreach (string a in arqs)
+                        {
+                            string nome = Path.GetFileNameWithoutExtension(a), av;
+                            bool anexar = false;
+                            if (PecaEquipe.Existe(pastaEq, tipo, nome))
+                            {
+                                if (Tema.Msg("Já existe a peça '" + nome + "' nesse tipo. Substituir o arquivo dela?", titulo, MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) { avisos.Add(nome + " (já existia)"); continue; }
+                                anexar = true;
+                            }
+                            PecaEquipe.Criar(pastaEq, nome, "", cmbFab.Text.Trim(), cmbGrupo.Text.Trim(), tipo, txtLink.Text.Trim(), "", new string[] { a }, anexar, anexar, out av);
+                            if (av != "") avisos.Add(av);
+                            feitas++;
+                        }
+                    }
+                    else
+                    {
+                        string nome = txtNome.Text.Trim(), av; bool anexar = false;
+                        if (PecaEquipe.Existe(pastaEq, tipo, nome))
+                        {
+                            if (Tema.Msg("Já existe a peça '" + nome + "' nesse tipo.\r\n\r\nAdicionar esses arquivos a ela? (arquivos com o mesmo nome serão substituídos)", titulo, MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
+                            anexar = true;
+                        }
+                        PecaEquipe.Criar(pastaEq, nome, txtCod.Text.Trim(), cmbFab.Text.Trim(), cmbGrupo.Text.Trim(), tipo, txtLink.Text.Trim(), txtFoto.Text, arqs.ToArray(), anexar, anexar, out av);
+                        if (av != "") avisos.Add(av);
+                        feitas = 1;
+                    }
+                }
+                catch (Exception ex) { Tema.Msg("Não consegui adicionar: " + ex.Message, titulo, MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
+                Listas.Extras();
+                string msg = feitas + " peça(s) adicionada(s) em:\r\n" + Path.Combine(Path.Combine(pastaEq, "Pecas"), tipo) + "\r\n\r\nO catálogo se atualiza sozinho ao voltar para ele (ou aperte F5). O Google Drive envia para a equipe em alguns instantes.";
+                if (avisos.Count > 0) msg += "\r\n\r\n" + string.Join("\r\n", avisos.ToArray());
+                Tema.Msg(msg, titulo, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                f.Close();
+            };
+            f.ShowDialog();
+        }
+    }
+
+    // ------------------------------------------------------------------ editar peca da equipe
+    static class Editar
+    {
+        public static void Rodar(string arquivo)
+        {
+            string titulo = "Editar peça - FTC_CAD";
+            string pasta = Cfg.PastaEquipe();
+            if (pasta == null) { Tema.Msg("A pasta da equipe não está configurada.", titulo, MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
+            PecaEquipe p;
+            try { p = PecaEquipe.Abrir(pasta, arquivo); }
+            catch (Exception ex) { Tema.Msg(ex.Message, titulo, MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
+            Dictionary<string, object> m = p.Meta;
+            string foto = Json.Str(m, "foto");
+
+            Form f = Tema.Janela(titulo, 560, 596);
+            Tema.Rotulo(f, "Arquivos da peça", 20, 12, 520, 20);
+            ListBox lst = Tema.Lista(f, 20, 34, 400, 88);
+            Button btnArq = Tema.Botao_(f, "Adicionar...", 430, 34, 110, 28, false);
+            Button btnTirar = Tema.Botao_(f, "Tirar", 430, 68, 110, 28, true);
+            Label ldica = Tema.Rotulo(f, "Os arquivos tirados vão para a Lixeira ao salvar.", 20, 126, 520, 20); ldica.ForeColor = Tema.Suave;
+            Tema.Rotulo(f, "Nome da peça", 20, 156, 520, 20);
+            TextBox txtNome = Tema.Caixa(f, 20, 178, 520);
+            Tema.Rotulo(f, "Código (opcional, ex.: 2101-0006-0001)", 20, 214, 520, 20);
+            TextBox txtCod = Tema.Caixa(f, 20, 236, 520);
+            Tema.Rotulo(f, "Fabricante", 20, 272, 250, 20);
+            ComboBox cmbFab = Tema.Combo(f, 20, 294, 250, true); cmbFab.Items.AddRange(new object[] { "goBILDA", "REV", "AndyMark", "Outro" });
+            Tema.Rotulo(f, "Tipo de peça", 290, 272, 250, 20);
+            ComboBox cmbTipo = Tema.Combo(f, 290, 294, 250, false); cmbTipo.Items.AddRange(Adicionar.Tipos);
+            Tema.Rotulo(f, "Grupo (opcional): aparece junto dos fabricantes e como etiqueta", 20, 330, 520, 20);
+            ComboBox cmbGrupo = Tema.Combo(f, 20, 352, 520, true);
+            try { foreach (string g in Listas.Grupos(pasta)) cmbGrupo.Items.Add(g); } catch { }
+            Tema.Rotulo(f, "Link da página do produto (opcional)", 20, 388, 520, 20);
+            TextBox txtLink = Tema.Caixa(f, 20, 410, 520);
+            Tema.Rotulo(f, "Foto da peça (.jpg ou .png)", 20, 446, 520, 20);
+            TextBox txtFoto = Tema.Caixa(f, 20, 468, 290); txtFoto.ReadOnly = true;
+            Button btnFoto = Tema.Botao_(f, "Trocar...", 320, 467, 100, 28, false);
+            Button btnTirarFoto = Tema.Botao_(f, "Tirar foto", 430, 467, 110, 28, true);
+            Label dica = Tema.Rotulo(f, "Se mudar o tipo, a pasta da peça vai para o novo tipo.", 20, 502, 520, 20); dica.ForeColor = Tema.Suave;
+            Label lp = Tema.Rotulo(f, "Pasta da equipe: " + pasta, 20, 524, 520, 20); lp.ForeColor = Tema.Suave;
+            Button ok = Tema.Botao_(f, "Salvar", 300, 556, 120, 30, false);
+            Button cancel = Tema.Botao_(f, "Cancelar", 430, 556, 110, 30, true);
+            cancel.Click += delegate { f.Close(); };
+
+            foreach (string a in p.Arquivos()) lst.Items.Add(new ArqItem(a, false));
+            txtNome.Text = p.Nome; txtCod.Text = p.Codigo;
+            cmbFab.Text = Json.Str(m, "fab") != "" ? Json.Str(m, "fab") : "Outro";
+            string tipoIni = p.Tipo;
+            if (!cmbTipo.Items.Contains(tipoIni)) cmbTipo.Items.Add(tipoIni);
+            cmbTipo.SelectedItem = tipoIni;
+            cmbGrupo.Text = Json.Str(m, "grupo"); txtLink.Text = Json.Str(m, "link");
+            txtFoto.Text = foto != "" ? foto : "(sem foto)";
+            string fotoNova = null; bool tirarFoto = false;
+            List<string> remover = new List<string>();      // nomes de arquivos atuais que o usuario tirou da lista
+            btnArq.Click += delegate
+            {
+                using (OpenFileDialog d = new OpenFileDialog())
+                {
+                    d.Filter = FiltrosArquivo.Todos; d.Multiselect = true;
+                    if (d.ShowDialog() != DialogResult.OK) return;
+                    foreach (string a in d.FileNames)
+                    {
+                        ArqItem igual = null; foreach (object o in lst.Items) if (string.Equals(((ArqItem)o).Nome, Path.GetFileName(a), StringComparison.OrdinalIgnoreCase)) igual = (ArqItem)o;
+                        if (igual != null)
+                        {
+                            if (Tema.Msg("A peça já tem o arquivo '" + igual.Nome + "'. Substituir?", titulo, MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) continue;
+                            lst.Items.Remove(igual);
+                        }
+                        lst.Items.Add(new ArqItem(a, true));
+                    }
+                }
+            };
+            btnTirar.Click += delegate
+            {
+                for (int i = lst.SelectedIndices.Count - 1; i >= 0; i--)
+                {
+                    ArqItem it = (ArqItem)lst.Items[lst.SelectedIndices[i]];
+                    if (!it.Novo) remover.Add(it.Nome);
+                    lst.Items.RemoveAt(lst.SelectedIndices[i]);
+                }
+            };
+            btnFoto.Click += delegate
+            {
+                using (OpenFileDialog d = new OpenFileDialog())
+                {
+                    d.Filter = "Imagens (*.jpg;*.jpeg;*.png)|*.jpg;*.jpeg;*.png";
+                    if (d.ShowDialog() == DialogResult.OK) { fotoNova = d.FileName; tirarFoto = false; txtFoto.Text = d.FileName; }
+                }
+            };
+            btnTirarFoto.Click += delegate { fotoNova = null; tirarFoto = true; txtFoto.Text = "(sem foto)"; };
+            ok.Click += delegate
+            {
+                if (txtNome.Text.Trim() == "") { Tema.Msg("Digite o nome da peça.", titulo, MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
+                if (lst.Items.Count == 0) { Tema.Msg("A peça precisa ter pelo menos um arquivo.", titulo, MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
+                try
+                {
+                    string aviso; List<string> novos = new List<string>();
+                    foreach (object o in lst.Items) if (((ArqItem)o).Novo) novos.Add(((ArqItem)o).Caminho);
+                    p.Aplicar(txtNome.Text.Trim(), txtCod.Text.Trim(), cmbFab.Text.Trim(), cmbGrupo.Text.Trim(), Convert.ToString(cmbTipo.SelectedItem), txtLink.Text.Trim(), fotoNova, tirarFoto, novos.ToArray(), remover.ToArray(), out aviso);
+                    Listas.Extras(); try { Listas.Estoque(); } catch { }
+                    string msg = "Peça atualizada. O catálogo se atualiza sozinho ao voltar para ele (ou aperte F5). O Google Drive envia para a equipe em alguns instantes.";
+                    if (aviso != "") msg += "\r\n\r\n" + aviso;
+                    Tema.Msg(msg, titulo, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    f.Close();
+                }
+                catch (Exception ex) { Tema.Msg("Não consegui salvar: " + ex.Message, titulo, MessageBoxButtons.OK, MessageBoxIcon.Warning); }
+            };
+            f.ShowDialog();
+        }
+    }
+
+    // abre o Explorer na pasta da peca da equipe (so a pasta: nunca abre os arquivos, que podem ser qualquer coisa)
+    static class PastaPeca
+    {
+        public static void Abrir(string arquivo)
+        {
+            string pasta = Cfg.PastaEquipe();
+            if (pasta == null) return;
+            try
+            {
+                PecaEquipe p = PecaEquipe.Abrir(pasta, arquivo);
+                if (p.Legado) Process.Start("explorer.exe", "/select,\"" + p.Step + "\""); else Process.Start("explorer.exe", "\"" + p.Dir + "\"");
+            }
+            catch (Exception ex) { Tema.Msg(ex.Message, "Abrir pasta - FTC_CAD", MessageBoxButtons.OK, MessageBoxIcon.Warning); }
         }
     }
 
@@ -564,241 +1047,6 @@ namespace FtcCad
             object v; if (!d.TryGetValue(de, out v)) return;
             d.Remove(de); d[para] = v;
             Gravar(pasta, d);
-        }
-    }
-
-    // ------------------------------------------------------------------ adicionar peca da equipe
-    static class Adicionar
-    {
-        public static readonly string[] Tipos = new string[] {
-            "Colares e acopladores", "Correias e polias", "Correntes e coroas", "Cubos", "Dobradiças e molas", "Eixos e tubos", "Eletrônica", "Engrenagens",
-            "Espaçadores e arruelas", "Esteiras", "Ferramentas", "Guias, slides e articulações", "Motores e caixas de redução", "Parafusos", "Placas e painéis", "Porcas",
-            "Rodas e pneus", "Rolamentos", "Servos", "Suportes e bases", "Vigas e perfis", "Outros" };
-
-        public static void Rodar()
-        {
-            string titulo = "Adicionar peça - FTC_CAD";
-            string pasta = Cfg.PastaEquipe();
-            if (pasta == null) pasta = Cfg.PedirPastaEquipe(titulo);
-            if (pasta == null) return;
-            string pastaEq = pasta;
-            Form f = Tema.Janela(titulo, 560, 500);
-            string[] arquivos = new string[0];
-            Tema.Rotulo(f, "Arquivo(s) .step (pode escolher vários)", 20, 14, 520, 20);
-            TextBox txtArq = Tema.Caixa(f, 20, 36, 400); txtArq.ReadOnly = true;
-            Button btnArq = Tema.Botao_(f, "Procurar...", 430, 35, 110, 28, false);
-            Tema.Rotulo(f, "Nome da peça (com vários arquivos, usa o nome de cada arquivo)", 20, 74, 520, 20);
-            TextBox txtNome = Tema.Caixa(f, 20, 96, 520);
-            Tema.Rotulo(f, "Código (opcional, ex.: 2101-0006-0001)", 20, 134, 520, 20);
-            TextBox txtCod = Tema.Caixa(f, 20, 156, 520);
-            Tema.Rotulo(f, "Fabricante", 20, 194, 250, 20);
-            ComboBox cmbFab = Tema.Combo(f, 20, 216, 250, true); cmbFab.Items.AddRange(new object[] { "goBILDA", "REV", "AndyMark", "Outro" }); cmbFab.Text = "Outro";
-            Tema.Rotulo(f, "Tipo de peça", 290, 194, 250, 20);
-            ComboBox cmbTipo = Tema.Combo(f, 290, 216, 250, false); cmbTipo.Items.AddRange(Tipos); cmbTipo.SelectedItem = "Outros";
-            Tema.Rotulo(f, "Grupo (opcional): aparece junto dos fabricantes e como etiqueta", 20, 254, 520, 20);
-            ComboBox cmbGrupo = Tema.Combo(f, 20, 276, 520, true);
-            try { foreach (string g in Listas.Grupos(pastaEq)) cmbGrupo.Items.Add(g); } catch { }
-            Tema.Rotulo(f, "Link da página do produto (opcional)", 20, 314, 520, 20);
-            TextBox txtLink = Tema.Caixa(f, 20, 336, 520);
-            Tema.Rotulo(f, "Foto da peça (opcional, .jpg ou .png)", 20, 374, 520, 20);
-            TextBox txtFoto = Tema.Caixa(f, 20, 396, 400); txtFoto.ReadOnly = true;
-            Button btnFoto = Tema.Botao_(f, "Procurar...", 430, 395, 110, 28, false);
-            Label lp = Tema.Rotulo(f, "Pasta da equipe: " + pastaEq, 20, 434, 520, 20); lp.ForeColor = Tema.Suave;
-            Button ok = Tema.Botao_(f, "Adicionar", 300, 460, 120, 30, false);
-            Button cancel = Tema.Botao_(f, "Cancelar", 430, 460, 110, 30, true);
-            cancel.Click += delegate { f.Close(); };
-
-            btnArq.Click += delegate
-            {
-                using (OpenFileDialog d = new OpenFileDialog())
-                {
-                    d.Filter = "Modelos STEP (*.step;*.stp)|*.step;*.stp"; d.Multiselect = true;
-                    if (d.ShowDialog() != DialogResult.OK) return;
-                    arquivos = d.FileNames;
-                    if (arquivos.Length == 1)
-                    {
-                        txtArq.Text = arquivos[0]; if (txtNome.Text == "") txtNome.Text = Path.GetFileNameWithoutExtension(arquivos[0]);
-                        txtNome.Enabled = true; txtCod.Enabled = true;
-                    }
-                    else { txtArq.Text = arquivos.Length + " arquivos selecionados"; txtNome.Text = ""; txtNome.Enabled = false; txtCod.Text = ""; txtCod.Enabled = false; }
-                }
-            };
-            btnFoto.Click += delegate
-            {
-                using (OpenFileDialog d = new OpenFileDialog()) { d.Filter = "Imagens (*.jpg;*.jpeg;*.png)|*.jpg;*.jpeg;*.png"; if (d.ShowDialog() == DialogResult.OK) txtFoto.Text = d.FileName; }
-            };
-            ok.Click += delegate
-            {
-                if (arquivos.Length == 0) { Tema.Msg("Escolha pelo menos um arquivo .step.", titulo, MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
-                if (arquivos.Length == 1 && txtNome.Text.Trim() == "") { Tema.Msg("Digite o nome da peça.", titulo, MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
-                string tipo = Convert.ToString(cmbTipo.SelectedItem);
-                string dirTipo = Path.Combine(Path.Combine(pastaEq, "Pecas"), tipo);
-                Directory.CreateDirectory(dirTipo);
-                int feitas = 0; List<string> puladas = new List<string>();
-                foreach (string arq in arquivos)
-                {
-                    string nomeArq = Path.GetFileName(arq);
-                    if (nomeArq.EndsWith(".stp", StringComparison.OrdinalIgnoreCase)) nomeArq = Path.GetFileNameWithoutExtension(nomeArq) + ".step";
-                    string dest = Path.Combine(dirTipo, nomeArq);
-                    if (File.Exists(dest) && Tema.Msg("Já existe uma peça com o arquivo '" + nomeArq + "' nessa pasta. Substituir?", titulo, MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
-                    { puladas.Add(nomeArq); continue; }
-                    File.Copy(arq, dest, true);
-                    string foto = "";
-                    if (txtFoto.Text != "" && File.Exists(txtFoto.Text) && arquivos.Length == 1)
-                    {
-                        string dirFotos = Path.Combine(Path.Combine(pastaEq, "Pecas"), "_fotos"); Directory.CreateDirectory(dirFotos);
-                        string fn = Path.GetFileNameWithoutExtension(nomeArq) + Path.GetExtension(txtFoto.Text);
-                        File.Copy(txtFoto.Text, Path.Combine(dirFotos, fn), true); foto = "_fotos\\" + fn;
-                    }
-                    Dictionary<string, object> meta = new Dictionary<string, object>();
-                    meta["nome"] = arquivos.Length == 1 ? txtNome.Text.Trim() : Path.GetFileNameWithoutExtension(nomeArq);
-                    meta["codigo"] = arquivos.Length == 1 ? txtCod.Text.Trim() : "";
-                    meta["fab"] = cmbFab.Text.Trim(); meta["grupo"] = cmbGrupo.Text.Trim(); meta["tipo"] = tipo; meta["link"] = txtLink.Text.Trim(); meta["foto"] = foto;
-                    meta["por"] = Environment.UserName; meta["data"] = DateTime.Now.ToString("yyyy-MM-dd");
-                    File.WriteAllText(dest + ".json", Json.S().Serialize(meta), new UTF8Encoding(true));
-                    feitas++;
-                }
-                Listas.Extras();
-                string msg = feitas + " peça(s) adicionada(s) em:\r\n" + dirTipo + "\r\n\r\nO catálogo se atualiza sozinho ao voltar para ele (ou aperte F5). O Google Drive envia para a equipe em alguns instantes.";
-                if (puladas.Count > 0) msg += "\r\n\r\nNão substituídas: " + string.Join(", ", puladas.ToArray());
-                Tema.Msg(msg, titulo, MessageBoxButtons.OK, MessageBoxIcon.Information);
-                f.Close();
-            };
-            f.ShowDialog();
-        }
-    }
-
-    // ------------------------------------------------------------------ editar peca da equipe
-    static class Editar
-    {
-        // aplica a edicao: atualiza o .json, move .step e .json se o tipo mudou, troca/tira a foto e leva a marcacao de estoque junto.
-        // devolve o caminho do .step depois da edicao; lanca excecao com mensagem clara se nao der.
-        public static string Aplicar(string pasta, string step, string nome, string codigo, string fab, string grupo, string tipo, string link, string fotoNova, bool tirarFoto, out string aviso)
-        {
-            aviso = "";
-            string baseDir = Path.GetFullPath(Path.Combine(pasta, "Pecas")).TrimEnd('\\', '/');
-            string json = step + ".json";
-            Dictionary<string, object> m = Json.LerObj(json);
-            string tipoAntigo = Json.Str(m, "tipo"); if (tipoAntigo == "") tipoAntigo = "Outros";
-            string chaveAntiga = EstoqueEquipe.Chave(tipoAntigo, Json.Str(m, "nome"), Json.Str(m, "codigo"), step);
-            if (tipo == "") tipo = "Outros";
-
-            string novoStep = step, novoJson = json;
-            if (!string.Equals(tipo, tipoAntigo, StringComparison.Ordinal))
-            {
-                string dirNovo = Path.Combine(baseDir, tipo);
-                novoStep = Path.Combine(dirNovo, Path.GetFileName(step)); novoJson = novoStep + ".json";
-                if (File.Exists(novoStep) || File.Exists(novoJson))
-                    throw new Exception("Já existe um arquivo '" + Path.GetFileName(step) + "' na pasta do tipo '" + tipo + "'. Nada foi alterado.");
-                Directory.CreateDirectory(dirNovo);
-            }
-
-            string foto = Json.Str(m, "foto");
-            string velha = foto != "" ? Path.Combine(baseDir, foto) : "";
-            if (fotoNova != null && fotoNova != "")
-            {
-                string dirFotos = Path.Combine(baseDir, "_fotos"); Directory.CreateDirectory(dirFotos);
-                string fn = Path.GetFileNameWithoutExtension(novoStep) + Path.GetExtension(fotoNova);
-                string destFoto = Path.Combine(dirFotos, fn);
-                bool mesma = string.Equals(Path.GetFullPath(fotoNova), Path.GetFullPath(destFoto), StringComparison.OrdinalIgnoreCase);
-                if (!mesma) File.Copy(fotoNova, destFoto, true);
-                if (velha != "" && File.Exists(velha) && !string.Equals(Path.GetFullPath(velha), Path.GetFullPath(destFoto), StringComparison.OrdinalIgnoreCase)) Sistema.ParaLixeira(velha);
-                foto = "_fotos\\" + fn;
-            }
-            else if (tirarFoto)
-            {
-                if (velha != "" && File.Exists(velha)) Sistema.ParaLixeira(velha);
-                foto = "";
-            }
-
-            m["nome"] = nome; m["codigo"] = codigo; m["fab"] = fab; m["grupo"] = grupo; m["tipo"] = tipo; m["link"] = link; m["foto"] = foto;
-            File.WriteAllText(json, Json.S().Serialize(m), new UTF8Encoding(true));
-            if (novoStep != step)
-            {
-                try { File.Move(step, novoStep); File.Move(json, novoJson); }
-                catch { if (File.Exists(novoStep) && !File.Exists(step)) File.Move(novoStep, step); throw; }
-            }
-
-            string chaveNova = EstoqueEquipe.Chave(tipo, nome, codigo, novoStep);
-            if (chaveNova != chaveAntiga)
-                try { EstoqueEquipe.Mover(pasta, chaveAntiga, chaveNova); }
-                catch { aviso = "A marcação de estoque desta peça não pôde ser levada para o novo nome (estoque.json ilegível agora). Marque de novo se precisar."; }
-            return novoStep;
-        }
-
-        public static void Rodar(string arquivo)
-        {
-            string titulo = "Editar peça - FTC_CAD";
-            string pasta = Cfg.PastaEquipe();
-            if (pasta == null) { Tema.Msg("A pasta da equipe não está configurada.", titulo, MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
-            string baseDir = Path.GetFullPath(Path.Combine(pasta, "Pecas")).TrimEnd('\\', '/');
-            string full = Path.GetFullPath(arquivo);
-            if (!full.StartsWith(baseDir + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)) { Tema.Msg("Esse arquivo não está na pasta da equipe.", titulo, MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
-            if (!full.EndsWith(".step", StringComparison.OrdinalIgnoreCase) || !File.Exists(full)) { Tema.Msg("Não achei esse arquivo .step na pasta da equipe.", titulo, MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
-            string json = full + ".json";
-            if (!File.Exists(json)) { Tema.Msg("Esse arquivo não é uma peça adicionada pela equipe (não tem o .json).", titulo, MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
-            Dictionary<string, object> m = Json.LerObj(json);
-            string foto = Json.Str(m, "foto");
-
-            Form f = Tema.Janela(titulo, 560, 500);
-            Label la = Tema.Rotulo(f, "Arquivo: " + Path.GetFileName(full), 20, 12, 520, 20); la.ForeColor = Tema.Suave;
-            Tema.Rotulo(f, "Nome da peça", 20, 40, 520, 20);
-            TextBox txtNome = Tema.Caixa(f, 20, 62, 520);
-            Tema.Rotulo(f, "Código (opcional, ex.: 2101-0006-0001)", 20, 100, 520, 20);
-            TextBox txtCod = Tema.Caixa(f, 20, 122, 520);
-            Tema.Rotulo(f, "Fabricante", 20, 160, 250, 20);
-            ComboBox cmbFab = Tema.Combo(f, 20, 182, 250, true); cmbFab.Items.AddRange(new object[] { "goBILDA", "REV", "AndyMark", "Outro" });
-            Tema.Rotulo(f, "Tipo de peça", 290, 160, 250, 20);
-            ComboBox cmbTipo = Tema.Combo(f, 290, 182, 250, false); cmbTipo.Items.AddRange(Adicionar.Tipos);
-            Tema.Rotulo(f, "Grupo (opcional): aparece junto dos fabricantes e como etiqueta", 20, 220, 520, 20);
-            ComboBox cmbGrupo = Tema.Combo(f, 20, 242, 520, true);
-            try { foreach (string g in Listas.Grupos(pasta)) cmbGrupo.Items.Add(g); } catch { }
-            Tema.Rotulo(f, "Link da página do produto (opcional)", 20, 280, 520, 20);
-            TextBox txtLink = Tema.Caixa(f, 20, 302, 520);
-            Tema.Rotulo(f, "Foto da peça (.jpg ou .png)", 20, 340, 520, 20);
-            TextBox txtFoto = Tema.Caixa(f, 20, 362, 290); txtFoto.ReadOnly = true;
-            Button btnFoto = Tema.Botao_(f, "Trocar...", 320, 361, 100, 28, false);
-            Button btnTirar = Tema.Botao_(f, "Tirar foto", 430, 361, 110, 28, true);
-            Label dica = Tema.Rotulo(f, "Se mudar o tipo, o arquivo vai para a pasta do novo tipo.", 20, 396, 520, 20); dica.ForeColor = Tema.Suave;
-            Label lp = Tema.Rotulo(f, "Pasta da equipe: " + pasta, 20, 418, 520, 20); lp.ForeColor = Tema.Suave;
-            Button ok = Tema.Botao_(f, "Salvar", 300, 458, 120, 30, false);
-            Button cancel = Tema.Botao_(f, "Cancelar", 430, 458, 110, 30, true);
-            cancel.Click += delegate { f.Close(); };
-
-            string nomeIni = Json.Str(m, "nome"); if (nomeIni == "") nomeIni = Path.GetFileNameWithoutExtension(full);
-            txtNome.Text = nomeIni; txtCod.Text = Json.Str(m, "codigo");
-            cmbFab.Text = Json.Str(m, "fab") != "" ? Json.Str(m, "fab") : "Outro";
-            string tipoIni = Json.Str(m, "tipo"); if (tipoIni == "") tipoIni = "Outros";
-            if (!cmbTipo.Items.Contains(tipoIni)) cmbTipo.Items.Add(tipoIni);
-            cmbTipo.SelectedItem = tipoIni;
-            cmbGrupo.Text = Json.Str(m, "grupo"); txtLink.Text = Json.Str(m, "link");
-            txtFoto.Text = foto != "" ? foto : "(sem foto)";
-            string fotoNova = null; bool tirarFoto = false;
-            btnFoto.Click += delegate
-            {
-                using (OpenFileDialog d = new OpenFileDialog())
-                {
-                    d.Filter = "Imagens (*.jpg;*.jpeg;*.png)|*.jpg;*.jpeg;*.png";
-                    if (d.ShowDialog() == DialogResult.OK) { fotoNova = d.FileName; tirarFoto = false; txtFoto.Text = d.FileName; }
-                }
-            };
-            btnTirar.Click += delegate { fotoNova = null; tirarFoto = true; txtFoto.Text = "(sem foto)"; };
-            ok.Click += delegate
-            {
-                if (txtNome.Text.Trim() == "") { Tema.Msg("Digite o nome da peça.", titulo, MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
-                try
-                {
-                    string aviso;
-                    Aplicar(pasta, full, txtNome.Text.Trim(), txtCod.Text.Trim(), cmbFab.Text.Trim(), cmbGrupo.Text.Trim(), Convert.ToString(cmbTipo.SelectedItem), txtLink.Text.Trim(), fotoNova, tirarFoto, out aviso);
-                    Listas.Extras(); try { Listas.Estoque(); } catch { }
-                    string msg = "Peça atualizada. O catálogo se atualiza sozinho ao voltar para ele (ou aperte F5). O Google Drive envia para a equipe em alguns instantes.";
-                    if (aviso != "") msg += "\r\n\r\n" + aviso;
-                    Tema.Msg(msg, titulo, MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    f.Close();
-                }
-                catch (Exception ex) { Tema.Msg("Não consegui salvar: " + ex.Message, titulo, MessageBoxButtons.OK, MessageBoxIcon.Warning); }
-            };
-            f.ShowDialog();
         }
     }
 
@@ -1023,6 +1271,7 @@ namespace FtcCad
                     if (acao == "baixar") { if (arq != null) Baixar.Rodar(arq); }
                     else if (acao == "remover") { if (arq != null) Remover.Rodar(arq); }
                     else if (acao == "editar") { if (arq != null) Editar.Rodar(arq); }
+                    else if (acao == "abrir") { if (arq != null) PastaPeca.Abrir(arq); }
                     else if (acao == "estoque")
                     {
                         if (arq != null)

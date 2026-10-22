@@ -165,21 +165,42 @@ main{padding:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200
 #toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--btn);color:#fff;padding:8px 14px;border-radius:8px;opacity:0;transition:.2s;pointer-events:none;max-width:90vw}
 #toast.on{opacity:.97}
 .empty{grid-column:1/-1;color:var(--mute);text-align:center;padding:48px 16px}
+[hidden]{display:none!important}
+.views{display:flex;gap:4px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:3px}
+.vw{border:0;background:transparent;color:var(--mute);font:inherit;font-size:13px;font-weight:600;border-radius:8px;padding:5px 12px;cursor:pointer;white-space:nowrap}
+.vw:hover{color:var(--ink)}
+.vw.on{background:var(--btn);color:#fff}
+.vw small{margin-left:5px;font-size:12px;opacity:.8}
+.tag.ex{background:#1e2a4d;color:#a9c4ff}
+.tag.n{background:transparent;border:1px solid var(--line);color:var(--mute)}
+#dlg{position:fixed;inset:0;background:rgba(8,5,18,.72);display:flex;align-items:center;justify-content:center;padding:16px;z-index:20}
+#dlg .box{background:var(--card);border:1px solid var(--line);border-radius:14px;max-width:560px;width:100%;max-height:85vh;display:flex;flex-direction:column;overflow:hidden}
+#dlg h2{font-size:15px;margin:0;padding:14px 16px 4px;color:#fff}
+#dlg .sub{padding:0 16px 10px;color:var(--mute);font-size:12.5px}
+#dlg .files{overflow:auto;padding:0 8px;border-top:1px solid var(--line)}
+.fl{display:flex;gap:8px;align-items:center;padding:8px;border-bottom:1px solid var(--line)}
+.fl .fn{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fl .fz{color:var(--mute);font-size:12px;white-space:nowrap}
+.btn2{font:inherit;font-size:12px;color:var(--ink);background:var(--accbg);border:1px solid #4a3a80;border-radius:6px;padding:3px 9px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.btn2:hover{background:#3a2a6a}
+#dlg .foot{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;padding:12px 16px;border-top:1px solid var(--line)}
 </style>
 </head>
 <body>
 <header>
   <div class="top">
     <h1>Catálogo FTC_CAD</h1>
+    <nav class="views" id="views" aria-label="Visão"><button type="button" class="vw on" data-v="cat">Catálogo</button><button type="button" class="vw" data-v="eq">Peças da equipe<small id="eqcount"></small></button></nav>
     <input id="q" type="search" placeholder="Buscar por nome ou código (ex.: servo, 2101-0006, hub 8mm)" aria-label="Buscar" autofocus>
     <span id="count" aria-live="polite"></span>
-    <a id="add" href="ftccad://adicionar" title="Adicionar uma peça nova à pasta compartilhada da equipe">+ Adicionar peça</a>
+    <a id="add" href="ftccad://adicionar" hidden title="Adicionar uma peça nova à pasta compartilhada da equipe">+ Adicionar peça</a>
   </div>
   <div class="filters">
     <select id="mfr" aria-label="Fabricante ou loja"></select>
     <select id="cat" aria-label="Categoria"></select>
     <select id="sz" aria-label="Tamanho do arquivo"><option value="0">qualquer tamanho</option><option value="5">até 5 MB</option><option value="20">até 20 MB</option></select>
-    <label><input id="frc" type="checkbox"> mostrar FRC</label>
+    <select id="ft" hidden aria-label="Tipo de arquivo"></select>
+    <label id="frcbox"><input id="frc" type="checkbox"> mostrar FRC</label>
     <label id="dlbox" hidden><input id="onlydl" type="checkbox"> só as que já estão no PC</label>
     <label id="estbox" hidden><input id="onlyest" type="checkbox"> só as disponíveis na equipe</label>
   </div>
@@ -188,6 +209,7 @@ main{padding:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200
 <main id="grid"></main>
 <button id="more" hidden>Mostrar mais</button>
 <div id="toast"></div>
+<div id="dlg" hidden></div>
 <script src="extras.js"></script>
 <script src="baixadas.js"></script>
 <script src="estoque.js"></script>
@@ -195,23 +217,40 @@ main{padding:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200
 <script>
 const D = JSON.parse(document.getElementById('data').textContent);
 const $ = id => document.getElementById(id);
-const BASE = {rows: D.rows.slice(), mfrs: D.mfrs.slice(), tipos: D.tipos.slice(), cats: D.cats.slice()};
+const BASE = {rows: D.rows.slice(), tipos: D.tipos.slice()};
 const norm = s => s.toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '');
-const mfrOk = (r, m) => !m || (m === 'stemOS' ? r.l : m === '__eq' ? r.x : r.m === m);
+const mfrOk = (r, m) => !m || (m === 'stemOS' ? r.l : r.m === m);
+// duas visoes: "cat" = catalogo (goBILDA, REV, WCP...) e "eq" = pecas da equipe (pasta compartilhada, varios arquivos de qualquer tipo)
+let VIEW = 'cat';
+const inView = r => VIEW === 'eq' ? !!r.x : !r.x;
+const exts = r => r.ex && r.ex.length ? r.ex : ['STEP'];
+const nf = r => (r.fs && r.fs.length) || 1;
 let EXJ = '';
+function buildFilters(){   // fabricantes, categorias e tipos de arquivo so da visao atual
+  const rows = D.rows.filter(inView), eq = VIEW === 'eq';
+  const m0 = $('mfr').value, c0 = $('cat').value, f0 = $('ft').value;
+  const uniq = a => Array.from(new Set(a)).sort();
+  const mfrs = uniq(rows.map(r => r.m)), cats = uniq(rows.map(r => r.p.split('/').slice(0, 2).join('/'))), fts = uniq([].concat(...rows.map(exts)));
+  const opts = (first, a) => '<option value="">' + first + '</option>' + a.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+  $('mfr').innerHTML = opts(eq ? 'todos os grupos e fabricantes' : 'todos os fabricantes e lojas', eq ? mfrs : mfrs.concat(['stemOS']));
+  $('cat').innerHTML = opts('todas as categorias', cats);
+  $('ft').innerHTML = opts('todos os tipos de arquivo', fts);
+  $('mfr').value = m0; $('cat').value = c0; $('ft').value = f0;
+  ['mfr', 'cat', 'ft'].forEach(id => { if ($(id).selectedIndex < 0) $(id).value = ''; });
+}
+function chrome(){   // o que aparece em cada visao
+  const eq = VIEW === 'eq';
+  $('add').hidden = !eq; $('ft').hidden = !eq; $('frcbox').hidden = eq; $('dlbox').hidden = eq || !dlMode(); $('estbox').hidden = !estMode();
+  $('q').placeholder = eq ? 'Buscar nas peças da equipe (nome, código, tipo de arquivo)' : 'Buscar por nome ou código (ex.: servo, 2101-0006, hub 8mm)';
+}
+function setView(v){ VIEW = v; TIPO = ''; document.querySelectorAll('.vw').forEach(b => b.classList.toggle('on', b.dataset.v === v)); buildFilters(); chrome(); filter(); }
 function mergeExtras(){
   const ex = window.EXTRAS || []; EXJ = JSON.stringify(ex);
-  D.rows = BASE.rows.concat(ex); D.mfrs = BASE.mfrs.slice(); D.tipos = BASE.tipos.slice(); D.cats = BASE.cats.slice();
-  ex.forEach(e => {
-    if (!D.mfrs.includes(e.m)) D.mfrs.push(e.m);
-    if (!D.tipos.includes(e.g)) D.tipos.splice(Math.max(0, D.tipos.length - 1), 0, e.g);
-    const c = e.p.split('/').slice(0, 2).join('/'); if (!D.cats.includes(c)) D.cats.push(c); });
-  D.mfrs.sort(); D.cats.sort();
-  D.rows.forEach(r => { if (!r.k) r.k = norm(r.n + ' ' + r.p + ' ' + r.t + ' ' + r.g + ' ' + (r.dn || '')); });
-  const m0 = $('mfr').value, c0 = $('cat').value;
-  $('mfr').innerHTML = '<option value="">todos os fabricantes e lojas</option>' + D.mfrs.concat(['stemOS']).concat(ex.length ? ['__eq'] : []).map(c => `<option value="${c}">${c === '__eq' ? 'adicionadas pela equipe' : c}</option>`).join('');
-  $('cat').innerHTML = '<option value="">todas as categorias</option>' + D.cats.map(c => `<option>${c}</option>`).join('');
-  $('mfr').value = m0; $('cat').value = c0;
+  D.rows = BASE.rows.concat(ex); D.tipos = BASE.tipos.slice();
+  ex.forEach(e => { if (!D.tipos.includes(e.g)) D.tipos.splice(Math.max(0, D.tipos.length - 1), 0, e.g); });
+  D.rows.forEach(r => { if (!r.k) r.k = norm(r.n + ' ' + r.p + ' ' + r.t + ' ' + r.g + ' ' + (r.dn || '') + ' ' + (r.x ? exts(r).join(' ') : '')); });
+  $('eqcount').textContent = ex.length || '';
+  buildFilters();
 }
 // pecas baixadas no PC (baixadas.js gerado pelo instalador); sem esse arquivo o catalogo age como antes
 const DL = new Set();
@@ -223,10 +262,10 @@ const EST = new Map();
 const estMode = () => !!window.ESTOQUE && typeof window.ESTOQUE === 'object';
 let ESTJ = '';
 function loadEst(){ EST.clear(); const o = window.ESTOQUE || {}; Object.keys(o).forEach(k => EST.set(k, (o[k] && o[k].q) || 0)); ESTJ = JSON.stringify(window.ESTOQUE || null);
-  const lb = $('estbox'); if (lb) lb.hidden = !estMode(); }
+  chrome(); }
 let DLJ = '';
 function loadDL(){ DL.clear(); (window.BAIXADAS || []).forEach(x => DL.add(String(x).toLowerCase())); DLJ = JSON.stringify(window.BAIXADAS || null);
-  const lb = $('dlbox'); if (lb) lb.hidden = !dlMode(); }
+  chrome(); }
 // ao voltar para a janela (depois de adicionar/remover/baixar uma peca), recarrega as listas sozinho
 let _ex = 0;
 function loadScript(src){ return new Promise(ok => { const sc = document.createElement('script'); sc.src = src + '?t=' + Date.now();
@@ -243,7 +282,7 @@ window.addEventListener('focus', async () => {
 const PAGE = 200; let shown = PAGE, list = [];
 let TIPO = '';
 function buildTabs(){
-  const cnt = {}; D.rows.forEach(r => { if ((frcOn() || !r.f) && mfrOk(r, $('mfr').value)) cnt[r.g] = (cnt[r.g] || 0) + 1; });
+  const cnt = {}; D.rows.forEach(r => { if (inView(r) && (frcOn() || !r.f) && mfrOk(r, $('mfr').value)) cnt[r.g] = (cnt[r.g] || 0) + 1; });
   if (TIPO && !cnt[TIPO]) { TIPO = ''; filter(); return; }
   const total = Object.values(cnt).reduce((a, b) => a + b, 0);
   $('tabs').innerHTML = [['', 'Todos', total]].concat(D.tipos.filter(t => cnt[t]).map(t => [t, t, cnt[t]]))
@@ -253,8 +292,8 @@ function frcOn(){ return $('frc').checked; }
 $('tabs').addEventListener('click', ev => { const t = ev.target.closest('.tab'); if (!t) return; TIPO = t.dataset.t; filter(); });
 function esc(s){return s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function filter(){
-  const terms = norm($('q').value).split(/\\s+/).filter(Boolean), cat = $('cat').value, mfr = $('mfr').value, tp = TIPO, frc = $('frc').checked, sz = +$('sz').value;
-  list = D.rows.filter(r => (frc || !r.f) && mfrOk(r, mfr) && (!tp || r.g === tp) && (!cat || r.p.startsWith(cat)) && (!sz || r.s <= sz) && (!$('onlydl').checked || isDL(r)) && (!$('onlyest').checked || EST.has(keyOf(r))) && terms.every(t => r.k.includes(t)));
+  const terms = norm($('q').value).split(/\\s+/).filter(Boolean), cat = $('cat').value, mfr = $('mfr').value, tp = TIPO, frc = $('frc').checked, sz = +$('sz').value, ft = $('ft').value, eq = VIEW === 'eq';
+  list = D.rows.filter(r => inView(r) && (frc || !r.f) && mfrOk(r, mfr) && (!tp || r.g === tp) && (!cat || r.p.startsWith(cat)) && (!ft || exts(r).includes(ft)) && (!sz || r.s <= sz) && (eq || !$('onlydl').checked || isDL(r)) && (!$('onlyest').checked || EST.has(keyOf(r))) && terms.every(t => r.k.includes(t)));
   shown = PAGE; buildTabs(); draw();
 }
 function split(n){ const m = n.match(/^(.+?) - (.+)$/); let code = m ? m[1] : '', t = m ? m[2] : n;
@@ -280,12 +319,12 @@ function setEst(c){
 function draw(){
   const part = list.slice(0, shown);
   $('grid').innerHTML = part.length ? part.map((r, i) => { const [code, title] = split(r.n), last = r.p.split('/').pop();
-    return `<div class="card" data-i="${i}" tabindex="0" role="button" title="Clique para copiar o caminho do arquivo">
+    return `<div class="card" data-i="${i}" tabindex="0" role="button" title="${r.x && nf(r) > 1 ? 'Clique para ver os arquivos da peça' : 'Clique para copiar o caminho do arquivo'}">
       <div class="ph ${r.i ? '' : 'none'}">${r.i ? `<img loading="lazy" referrerpolicy="no-referrer" src="${esc(r.i)}" alt="">` : 'sem foto'}</div>
       <div class="b">${code ? `<div class="code">${esc(code)}</div>` : ''}<div class="name">${esc(r.dn || title)}</div>
       <div class="path">${esc(r.m)} · ${esc(r.g === last ? r.p.split('/').slice(-2).join(' / ') : last)}</div>
-      <div class="meta">${r.l ? '<span class="tag shop">stemOS</span>' : ''}${r.x ? '<span class="tag eq" title="Adicionada por ' + esc(r.b || 'alguém da equipe') + '">' + esc(r.gr || 'Equipe') + '</span>' : ''}${r.f ? '<span class="tag">FRC</span>' : ''}${dlMode() && !r.x ? (isDL(r) ? '<span class="dl ok" title="Este arquivo já está na sua pasta">no PC</span>' : '<span class="dl no" title="Clique no cartão para baixar só esta peça">baixar</span>') : ''}${r.x ? '<a class="ed" href="ftccad://editar?arquivo=' + encodeURIComponent(r.a) + '" title="Editar nome, tipo, foto etc. desta peça da equipe">editar</a>' : ''}${r.x ? '<a class="rm" href="ftccad://remover?arquivo=' + encodeURIComponent(r.a) + '" title="Remover esta peça da pasta da equipe">remover</a>' : ''}${estMode() ? estChip(r) : ''}<span class="sz">${r.s ? r.s + ' MB' : ''}</span></div></div>
-    </div>`; }).join('') : '<div class="empty">Nenhuma peça encontrada. Tente outra palavra ou limpe os filtros.</div>';
+      <div class="meta">${r.l ? '<span class="tag shop">stemOS</span>' : ''}${r.x ? '<span class="tag eq" title="Adicionada por ' + esc(r.b || 'alguém da equipe') + '">' + esc(r.gr || 'Equipe') + '</span>' + exts(r).map(e => '<span class="tag ex">' + esc(e) + '</span>').join('') + (nf(r) > 1 ? '<span class="tag n">' + nf(r) + ' arquivos</span>' : '') : ''}${r.f ? '<span class="tag">FRC</span>' : ''}${dlMode() && !r.x ? (isDL(r) ? '<span class="dl ok" title="Este arquivo já está na sua pasta">no PC</span>' : '<span class="dl no" title="Clique no cartão para baixar só esta peça">baixar</span>') : ''}${r.x ? '<a class="ed" href="ftccad://editar?arquivo=' + encodeURIComponent(r.o || r.a) + '" title="Editar nome, tipo, foto etc. desta peça da equipe">editar</a>' : ''}${r.x ? '<a class="rm" href="ftccad://remover?arquivo=' + encodeURIComponent(r.o || r.a) + '" title="Remover esta peça da pasta da equipe">remover</a>' : ''}${estMode() ? estChip(r) : ''}<span class="sz">${r.s ? r.s + ' MB' : ''}</span></div></div>
+    </div>`; }).join('') : '<div class="empty">' + (VIEW === 'eq' && !D.rows.some(inView) ? 'Nenhuma peça da equipe ainda.<br>Use <b>+ Adicionar peça</b> para guardar arquivos (STEP, F3D, STL, PDF...) que ficam compartilhados com a equipe.' : 'Nenhuma peça encontrada. Tente outra palavra ou limpe os filtros.') + '</div>';
   $('count').textContent = list.length.toLocaleString('pt-BR') + ' peças';
   $('more').hidden = shown >= list.length;
   const on = document.querySelector('.tab.on'); if (on) on.scrollIntoView({inline:'nearest', block:'nearest'});
@@ -300,9 +339,27 @@ function copyText(t){
   return new Promise((ok, no) => { try { const a = document.createElement('textarea'); a.value = t; a.style.position = 'fixed'; a.style.opacity = '0';
     document.body.appendChild(a); a.select(); const r = document.execCommand('copy'); a.remove(); r ? ok() : no(); } catch (e) { no(); } });
 }
+let FILES = null;
+function showFiles(r){   // peca da equipe com varios arquivos: lista, copiar caminho de cada um, abrir a pasta
+  const [code, title] = split(r.n), dir = r.fs[0].a.replace(/[\\\\/][^\\\\/]*$/, '');
+  FILES = {r: r, dir: dir};
+  $('dlg').innerHTML = '<div class="box" role="dialog" aria-label="Arquivos da peça"><h2>' + esc(code ? code + ' - ' + title : title) + '</h2><div class="sub">' + r.fs.length + ' arquivos' + (r.s ? ' · ' + r.s + ' MB no total' : '') + '</div><div class="files">'
+    + r.fs.map((f, i) => '<div class="fl"><span class="tag ex">' + esc(f.e || '?') + '</span><span class="fn" title="' + esc(f.n) + '">' + esc(f.n) + '</span><span class="fz">' + f.s + ' MB</span><button type="button" class="btn2" data-cp="' + i + '">copiar caminho</button></div>').join('')
+    + '</div><div class="foot"><a class="btn2" href="ftccad://abrir?arquivo=' + encodeURIComponent(r.o || r.a) + '">Abrir pasta</a><button type="button" class="btn2" data-dir="1">Copiar caminho da pasta</button><button type="button" class="btn2" data-x="1">Fechar</button></div></div>';
+  $('dlg').hidden = false;
+}
+$('dlg').addEventListener('click', ev => {
+  if (ev.target === $('dlg') || ev.target.closest('[data-x]')) { $('dlg').hidden = true; return; }
+  const cp = ev.target.closest('[data-cp]'), dr = ev.target.closest('[data-dir]');
+  const path = cp ? FILES.r.fs[+cp.dataset.cp].a : dr ? FILES.dir : null;
+  if (path) copyText(path).then(() => toast('Caminho copiado: ' + path), () => { window.prompt('Copie o caminho (Ctrl+C):', path); });
+});
+document.addEventListener('keydown', ev => { if (ev.key === 'Escape') $('dlg').hidden = true; });
+$('views').addEventListener('click', ev => { const b = ev.target.closest('.vw'); if (b && b.dataset.v !== VIEW) setView(b.dataset.v); });
 function copyCard(c){
   if (!c) return;
   const r = list[+c.dataset.i];
+  if (r.x && nf(r) > 1) { showFiles(r); return; }
   if (!isDL(r)) { toast('Baixando ' + (r.s ? r.s + ' MB' : 'a peça') + '... uma janela vai abrir e o caminho é copiado no fim'); location.href = 'ftccad://baixar?arquivo=' + encodeURIComponent(r.p + '/' + r.n); return; }
   const path = r.a ? r.a : baseDir() + r.p.replace(/\//g, '\\\\') + '\\\\' + r.n + '.step';
   copyText(path).then(() => toast('Caminho copiado: ' + path), () => { window.prompt('Copie o caminho (Ctrl+C):', path); });
@@ -311,10 +368,11 @@ $('grid').addEventListener('click', ev => { if (ev.target.closest('.rm, .ed')) r
 $('grid').addEventListener('keydown', ev => { if (ev.target.closest('.es, .rm, .ed')) return; if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); copyCard(ev.target.closest('.card')); } });
 function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');setTimeout(()=>e.classList.remove('on'),3500)}
 $('more').onclick = () => { shown += PAGE; draw(); };
-['q','mfr','cat','frc','sz','onlydl','onlyest'].forEach(id => $(id).addEventListener(id === 'q' ? 'input' : 'change', filter));
+['q','mfr','cat','ft','frc','sz','onlydl','onlyest'].forEach(id => $(id).addEventListener(id === 'q' ? 'input' : 'change', filter));
 loadDL();
 loadEst();
 mergeExtras();
+chrome();
 filter();
 </script>
 </body>
